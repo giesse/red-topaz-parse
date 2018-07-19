@@ -183,7 +183,7 @@ topaz-parse: context [
                         state/match?: yes
                         state
                     ]
-                    literal [
+                    literal quote [
                         state/rules-pos: next state/rules-pos
                         parse-match state [:state/rules-pos/1 = :state/pos/1]
                     ]
