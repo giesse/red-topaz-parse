@@ -242,8 +242,12 @@ topaz-parse: context [
                         state
                     ]
                 ] [
-                    ; problem: will always recurse on word! - desirable?
-                    parse-element/with state get rule
+                    ; don't recurse on word! more than once
+                    either with [
+                        parse-match state [:rule = first state/pos]
+                    ] [
+                        parse-element/with state get rule
+                    ]
                 ]
             ]
             paren! [
