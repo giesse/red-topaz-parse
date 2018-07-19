@@ -274,6 +274,8 @@ topaz-parse: context [
         state/result: none
         until [
             element: parse-element copy state
+            ; don't enter infinite loop if the rule does not advance the input
+            if same? state/pos element/pos [break]
             state/pos: element/pos
             either element/match? [state/result: element/result false] [true]
         ]
