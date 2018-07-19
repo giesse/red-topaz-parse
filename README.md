@@ -60,3 +60,53 @@ or, if we keep it as a mezz, it would make sense to rewrite it using Red's `pars
 *** Where: catch
 *** Stack:  
 ```
+
+## Example
+
+```
+value: [integer! | word!]
+atom: [object [left: value '** op: ('power) right: atom] | value]
+item: [object [left: atom ['* op: ('multiply) | '/ op: ('divide)] right: item] | atom]
+term: [object [left: item ['+ op: ('add) | '- op: ('subtract)] right: term] | item]
+equation: [object [op: ('equal) left: term '= right: term]]
+
+topaz-parse [1 + 3 * x - x ** 2 * 1 / 2 = 2 * y] equation
+```
+
+Results in:
+
+```
+#(
+    op: equal
+    left: #(
+        left: 1
+        op: add
+        right: #(
+            left: #(
+                left: 3
+                op: multiply
+                right: x
+            )
+            op: subtract
+            right: #(
+                left: #(
+                    left: x
+                    op: power
+                    right: 2
+                )
+                op: multiply
+                right: #(
+                    left: 1
+                    op: divide
+                    right: 2
+                )
+            )
+        )
+    )
+    right: #(
+        left: 2
+        op: multiply
+        right: y
+    )
+)
+```
