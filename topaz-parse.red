@@ -223,11 +223,24 @@ topaz-parse: context [
                     into [
                         rule: second state/rules-pos
                         if word? :rule [rule: get rule]
+                        either datatype? :rule [
+                            type: rule
+                            ; only block parsing currently supported
+                            unless find any-block! type [
+                                cause-error 'script 'parse-rule [state/rules-pos]
+                            ]
+                            rule: third state/rules-pos
+                            if word? :rule [rule: get rule]
+                            skip-by: 3
+                        ] [
+                            type: block!
+                            skip-by: 2
+                        ]
                         if not block? :rule [
                             cause-error 'script 'parse-rule [state/rules-pos]
                         ]
-                        state/rules-pos: skip state/rules-pos 2
-                        either all [not empty? state/pos block? block: first state/pos] [
+                        state/rules-pos: skip state/rules-pos skip-by
+                        either all [not empty? state/pos type = type? block: first state/pos] [
                             result: copy state
                             result/pos: block
                             result/rules-pos: rule
