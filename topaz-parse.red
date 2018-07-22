@@ -282,6 +282,9 @@ topaz-parse: context [
             datatype! [
                 parse-match state [rule = type? first state/pos]
             ]
+            typeset! [
+                parse-match state [find rule type? first state/pos]
+            ]
         ] [
             parse-match state [:rule = first state/pos]
         ]
