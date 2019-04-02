@@ -37,12 +37,8 @@ Red [
 ; == [divide 1 factorial k]
 ; >> parse-expression [a * - b]
 ; == [multiply a negate b]
-
-; Currently fails:
-;>> parse-expression [e ** (i / h * (p * x - E * t))]
-;*** Internal Error: stack overflow
-;*** Where: unless
-;*** Stack: parse-expression topaz-parse  
+; >> parse-expression [e ** (i / h * (p * x - E * t))]
+; == [power e divide i multiply h subtract multiply p x multiply E t]
 
 do %../topaz-parse.red
 
