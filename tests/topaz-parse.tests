@@ -69,8 +69,14 @@ Red [
 [topaz-parse [1 2 3] [opt word! integer!]]
 [topaz-parse [a b c] [opt word!]]
 [topaz-parse [1 2 3] [any []]]
-[topaz-parse [1 2 3] [any (print "Hello")]]
-[topaz-parse [1 2 3] [any [(print "Hello")]]]
+[
+    output: copy []
+    reduce [topaz-parse [1 2 3] [any (append output "Hello")] output]
+]
+[
+    output: copy []
+    reduce [topaz-parse [1 2 3] [any [(append output "Hello")]] output]
+]
 [
     word: 'word
     topaz-parse [a b c] [word]

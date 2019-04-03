@@ -25,6 +25,7 @@ review-test-results: function [file] [
     foreach result results [
         if result/status = 'Unknown [
             print ["^/Test:" mold-flat result/test 80]
+            if result/note [print result/note]
             switch/default result/type [
                 error! [
                     print "Causes error:"

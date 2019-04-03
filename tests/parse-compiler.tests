@@ -2,4 +2,4 @@ Red [
     Tests: [%parse-compiler.red]
 ]
 
-[parse-compiler/compile-rules [integer!]]
+[select parse-compiler/compile-rules [integer!] 'rules]
