@@ -96,7 +96,8 @@ parse-compiler: context [
         paren: func [block] [reduce [to paren! compose/only/deep block]]
         foreach [name ast] body-of parsed-rules [
             append result name
-            append/only result tree-to-block/into ast [
+            compiled-rule: copy [(_state/collection: _state/result: none)]
+            tree-to-block/into ast [
                 (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
                 (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
                 (end)               -> ['end literal (_state/result: none)]
@@ -215,7 +216,9 @@ parse-compiler: context [
                     ] []
                     'into child
                 ]
-            ] copy [(_state/collection: _state/result: none)]
+            ] compiled-rule
+            append compiled-rule [| (_state/result: none)]
+            append/only result compiled-rule
         ]
         context result
     ]

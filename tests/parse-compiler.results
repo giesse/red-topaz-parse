@@ -1,7 +1,6 @@
 #(
     test: [select parse-compiler/compile-rules [integer!] 'rules]
-    result: [(_state/collection: _state/result: none) set _value integer! (_state/result: :_value)]
+    result: [(_state/collection: _state/result: none) set _value integer! (_state/result: :_value) | (_state/result: none)]
     type: block!
     status: Pass
-    note: "Test changed"
 )

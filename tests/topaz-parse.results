@@ -15,9 +15,8 @@
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [integer! integer! integer! integer!]]
-    result: 3
-    type: integer!
-    status: Failure
+    type: none!
+    status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [word!]]
     type: none!
@@ -156,14 +155,12 @@
     status: Failure
 ) #(
     test: [topaz-parse [a [b c] d] [word! into paren! [word! word!]]]
-    result: a
-    type: word!
-    status: Failure
+    type: none!
+    status: Pass
 ) #(
     test: [topaz-parse [a [b c] d] [word! into paren! [word! word!] word!]]
-    result: a
-    type: word!
-    status: Failure
+    type: none!
+    status: Pass
 ) #(
     test: [topaz-parse [a (b c) d] [word! into paren! [word! word!]]]
     result: c
