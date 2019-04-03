@@ -2,4 +2,5 @@ Red [
     Tests: [%parse-compiler.red]
 ]
 
-[select parse-compiler/compile-rules [integer!] 'rules]
+[mold select parse-compiler/compile-rules [integer!] 'rules]
+[mold select parse-compiler/compile-rules [collect some [keep integer!]] 'rules]

@@ -103,11 +103,11 @@ parse-compiler: context [
                 (end)               -> ['end literal (_state/result: none)]
                 (skip)              -> [([set _value skip (_state/result: :_value)])]
                 (paren code)        -> [(paren [_state/result: (code)])]
-                (opt child)         -> ['opt child]
-                (any child)         -> ['any child]
-                (some child)        -> ['some child]
-                (not child)         -> ['not child]
-                (rule word)         -> [[
+                (opt child)         -> ['opt [child]]
+                (any child)         -> ['any [child]]
+                (some child)        -> ['some [child]]
+                (not child)         -> ['not [child]]
+                (rule word)         -> [
                     literal (_push-state) 
                     word
                     literal (
@@ -118,7 +118,7 @@ parse-compiler: context [
                     '|
                     literal (_pop-state)
                     'fail
-                ]]
+                ]
                 (match-value value) -> [
                     ; Red parse wants [some/path] rather than ['some/path] to match a literal path
                     ; also there's a bug with lit-words, you need [ahead word! 'some-word] to work around it
@@ -149,20 +149,18 @@ parse-compiler: context [
                         _push-state
                         _state/collection: make map! []
                     )
-                    [
-                        child
-                        literal (
-                            _value: _state/collection
-                            _pop-state
-                            _state/result: _value
-                        )
-                        '|
-                        literal (_pop-state)
-                        'fail
-                    ]
+                    [child]
+                    literal (
+                        _value: _state/collection
+                        _pop-state
+                        _state/result: _value
+                    )
+                    '|
+                    literal (_pop-state)
+                    'fail
                 ]
                 (set word child)    -> [
-                    child
+                    [child]
                     (paren [_word: (to lit-word! word)])
                     literal (
                         either map? _state/collection [
@@ -177,20 +175,18 @@ parse-compiler: context [
                         _push-state
                         _state/collection: make block! 0
                     )
-                    [
-                        child
-                        literal (
-                            _value: _state/collection
-                            _pop-state
-                            _state/result: _value
-                        )
-                        '|
-                        literal (_pop-state)
-                        'fail
-                    ]
+                    [child]
+                    literal (
+                        _value: _state/collection
+                        _pop-state
+                        _state/result: _value
+                    )
+                    '|
+                    literal (_pop-state)
+                    'fail
                 ]
                 (keep child)        -> [
-                    child
+                    [child]
                     literal (
                         _value: either map? _state/collection [
                             unless find _state/collection 'children [
@@ -214,7 +210,7 @@ parse-compiler: context [
                     either (value? 'type) [
                         'ahead type
                     ] []
-                    'into child
+                    'into [child]
                 ]
             ] compiled-rule
             append compiled-rule [| (_state/result: none)]

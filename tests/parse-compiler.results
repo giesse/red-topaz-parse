@@ -1,6 +1,11 @@
 #(
-    test: [select parse-compiler/compile-rules [integer!] 'rules]
-    result: [(_state/collection: _state/result: none) set _value integer! (_state/result: :_value) | (_state/result: none)]
-    type: block!
+    test: [mold select parse-compiler/compile-rules [integer!] 'rules]
+    result: {[(_state/collection: _state/result: none) set _value integer! (_state/result: :_value) | (_state/result: none)]}
+    type: string!
+    status: Pass
+) #(
+    test: [mold select parse-compiler/compile-rules [collect some [keep integer!]] 'rules]
+    result: {[(_state/collection: _state/result: none) (^/    _push-state ^/    _state/collection: make block! 0^/) [some [[set _value integer! (_state/result: :_value)] (^/    _value: either map? _state/collection [^/        unless find _state/collection 'children [^/            _state/collection/children: make block! 0^/        ] ^/        _state/collection/children^/    ] [^/        _state/collection^/    ] ^/    unless block? :_value [^/        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/    ]^/) (append _value :_state/result)]] (^/    _value: _state/collection ^/    _pop-state ^/    _state/result: _value^/) | (_pop-state) fail | (_state/result: none)]}
+    type: string!
     status: Pass
 )
