@@ -1,7 +1,6 @@
 Red [
-    File:    %topaz-parse.red
-    Title:   "An alternative to PARSE by Gabriele Santilli"
-    Author:  "Gabriele Santilli"
+    File:    %make.red
+    Title:   "Generate the topaz-parse.red file"
     Version: 1.0.0
     License: {
         Copyright 2019 Gabriele Santilli
@@ -28,14 +27,9 @@ Red [
 ]
 
 do %parse-compiler.red
+do %parse-parse.red
 
-topaz-parse: function [
-    "Parse BLOCK according to RULES; return last result from RULES if it matches, NONE otherwise"
-    block [any-block!]
-    rules [block!]
-    ;/trace "Output execution trace for debugging"
-] [
-    compiled-rules: parse-compiler/compile-rules rules
-    parse block compiled-rules/rules
-    :compiled-rules/_state/result
-]
+template: load %parse-compiler-template.red
+compiled-rules: parse-compiler/compile-rules in parse-parse 'alternatives
+change find/tail select template 'context [compiled-rules:] compiled-rules
+write %parse-compiler.red mold/only template
