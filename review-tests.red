@@ -21,7 +21,7 @@ mold-flat: func [value size] [
 ]
 
 review-test-results: function [file] [
-    results: load file
+    results: load/all file
     foreach result results [
         if result/status = 'Unknown [
             print ["^/Test:" mold-flat result/test 80]
@@ -34,7 +34,7 @@ review-test-results: function [file] [
                 print ["Result: (" result/type ")" mold-flat result/result 80]
             ]
             forever [
-                switch/default ask "Pass/Fail/Unknown/PRint? " [
+                switch/default ask "Pass/Fail/Unknown/PRint/Quit? " [
                     "p" "pass" [
                         result/status: 'Pass
                         break
@@ -53,6 +53,7 @@ review-test-results: function [file] [
                         probe result/result
                         print ""
                     ]
+                    "q" "quit" [quit]
                 ] [
                     print {Type "p" or "pass" etc. to mark the test as passed;
 "pr" or "print" to print the whole test and results; etc.

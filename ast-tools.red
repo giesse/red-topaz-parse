@@ -235,16 +235,16 @@ emit-production: function [output rules node production] [
     ]
 ]
 
-map-to-object: function [map [map!]] [
+map-to-object: function [map [map!] /with words [block!]] [
     body: body-of map
-    words: clear []
+    words*: clear []
     values: clear []
     foreach [word value] body [
-        append words word
+        append words* word
         append/only values :value
     ]
-    obj: make object! append copy words none
-    set bind words obj values
+    obj: construct append copy words words*
+    set bind words* obj values
     obj
 ]
 
@@ -256,7 +256,7 @@ tree-to-block*: function [output stack indent node rules] [
                 mapped/.stack: stack
                 mapped/.indent: indent
                 mapped/.parent: last stack
-                mapped: map-to-object mapped
+                mapped: map-to-object/with mapped [.parent:]
                 production: bind/copy rule/production mapped
                 emit-production output rules mapped production
                 break

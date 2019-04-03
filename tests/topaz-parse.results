@@ -1,28 +1,27 @@
 #(
     test: [topaz-parse [1 2 3] [integer!]]
-    result: {*** Script Error: .parent has no value^/*** Where: =^/*** Stack: run-test-file topaz-parse tree-to-block tree-to-block* emit-production }
-    type: error!
-    status: Failure
+    result: 1
+    type: integer!
+    status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [integer! integer!]]
-    result: {*** Script Error: .parent has no value^/*** Where: =^/*** Stack: run-test-file topaz-parse tree-to-block tree-to-block* emit-production }
-    type: error!
-    status: Failure
+    result: 2
+    type: integer!
+    status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [integer! integer! integer!]]
-    result: {*** Script Error: .parent has no value^/*** Where: =^/*** Stack: run-test-file topaz-parse tree-to-block tree-to-block* emit-production }
-    type: error!
-    status: Failure
+    result: 3
+    type: integer!
+    status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [integer! integer! integer! integer!]]
-    result: {*** Script Error: .parent has no value^/*** Where: =^/*** Stack: run-test-file topaz-parse tree-to-block tree-to-block* emit-production }
-    type: error!
+    result: 3
+    type: integer!
     status: Failure
 ) #(
     test: [topaz-parse [1 2 3] [word!]]
-    result: {*** Script Error: .parent has no value^/*** Where: =^/*** Stack: run-test-file topaz-parse tree-to-block tree-to-block* emit-production }
-    type: error!
-    status: Failure
+    type: none!
+    status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [some integer!]]
     result: 3

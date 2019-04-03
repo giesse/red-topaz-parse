@@ -1,0 +1,5 @@
+Red [
+    Tests: [%parse-compiler.red]
+]
+
+[parse-compiler/compile-rules [integer!]]

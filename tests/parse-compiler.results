@@ -1,0 +1,14 @@
+#(
+    test: [parse-compiler/compile-rules [integer!]]
+    result: [_state: make object! [
+        collection: #[none] 
+        result: #[none]
+    ] _stack: [] _push-state: func [] [
+        append _stack _state 
+        _state: copy _state
+    ] _pop-state: func [] [
+        _state: take/last _stack
+    ] _value: #[none] _word: #[none] rules: [(_state/collection: _state/result: none) set _value integer! (_state/result: :_value)]]
+    type: object!
+    status: Pass
+)
