@@ -1,7 +1,16 @@
 # A version of Topaz' `parse` function for Red
 
-This is a simple direct port of Topaz' `parse` function to Red. It should perhaps be rewritten in Red/System (any takers?),
-or, if we keep it as a mezz, it would make sense to rewrite it using Red's `parse` instead.
+This is an implementation of Topaz' `parse` function for Red.
+
+It includes a compiler that can output Red `parse` rules from the `topaz-parse` dialect.
+
+## Instructions
+
+```
+$ git clone https://github.com/giesse/red-topaz-parse.git
+$ cd red-topaz-parse/
+$ red make.red
+```
 
 ## Major differences compared to `parse`
 
