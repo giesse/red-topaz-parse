@@ -37,5 +37,5 @@ topaz-parse: function [
 ] [
     compiled-rules: parse-compiler/compile-rules rules
     parse block compiled-rules/rules
-    :compiled-rules/_state/result
+    :compiled-rules/_result
 ]

@@ -32,8 +32,10 @@ parse-compiler: context [
     compiled-rules: []
 
     compile-rules*: function [result name rules] [
+        compiled-rules/_collection: compiled-rules/_result: none
+        clear compiled-rules/_stack
         parse rules compiled-rules/alternatives
-        put result name compiled-rules/_state/result
+        put result name compiled-rules/_result
         handle-word: function [old-node new-node] [
             word: first old-node/children
             value: get word
@@ -64,19 +66,15 @@ parse-compiler: context [
     ]
 
     runtime: [
-        _state: context [
-            collection: none
-            result:     none
-        ]
+        _coll: _collection: _result: none
         _stack: []
+
         _push-state: does [
-            append _stack _state
-            _state: copy _state
+            append _stack _collection
         ]
         _pop-state: does [
-            _state: take/last _stack
+            _collection: take/last _stack
         ]
-        _value: _word: none
     ]
 
     compile-rules: function [
@@ -96,13 +94,13 @@ parse-compiler: context [
         paren: func [block] [reduce [to paren! compose/only/deep block]]
         foreach [name ast] body-of parsed-rules [
             append result name
-            compiled-rule: copy [(_state/collection: _state/result: none)]
+            compiled-rule: copy []
             tree-to-block/into ast [
                 (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
                 (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
-                (end)               -> ['end literal (_state/result: none)]
-                (skip)              -> [([set _value skip (_state/result: :_value)])]
-                (paren code)        -> [(paren [_state/result: (code)])]
+                (end)               -> ['end literal (_result: none)]
+                (skip)              -> ['set '_result 'skip]
+                (paren code)        -> [(paren [_result: (code)])]
                 (opt child)         -> ['opt [child]]
                 (any child)         -> ['any [child]]
                 (some child)        -> ['some [child]]
@@ -110,11 +108,7 @@ parse-compiler: context [
                 (rule word)         -> [
                     literal (_push-state) 
                     word
-                    literal (
-                        _value: :_state/result
-                        _pop-state
-                        _state/result: :_value
-                    )
+                    literal (_pop-state)
                     '|
                     literal (_pop-state)
                     'fail
@@ -134,76 +128,73 @@ parse-compiler: context [
                     either (.parent = 'not) [
                         (rule)
                     ] [
-                        'set '_value (rule) literal (_state/result: :_value)
+                        'set '_result (rule)
                     ]
                 ]
                 (match-type type)   -> [
                     either (.parent = 'not) [
                         type
                     ] [
-                        'set '_value type literal (_state/result: :_value)
+                        'set '_result type
                     ]
                 ]
-                (object child)      -> [
+                (object child)      -> [[
                     literal (
                         _push-state
-                        _state/collection: make map! []
+                        _collection: make map! []
                     )
                     [child]
                     literal (
-                        _value: _state/collection
+                        _result: _collection
                         _pop-state
-                        _state/result: _value
                     )
                     '|
                     literal (_pop-state)
                     'fail
-                ]
+                ]]
                 (set word child)    -> [
                     [child]
-                    (paren [_word: (to lit-word! word)])
-                    literal (
-                        either map? _state/collection [
-                            put _state/collection _word :_state/result
+                    (paren [
+                        either map? _collection [
+                            put _collection (to lit-word! word) :_result
                         ] [
-                            set _word :_state/result
+                            set (to lit-word! word) :_result
                         ]
-                    )
+                    ])
                 ]
-                (collect child)     -> [
+                (collect child)     -> [[
                     literal (
                         _push-state
-                        _state/collection: make block! 0
+                        _collection: make block! 0
                     )
                     [child]
                     literal (
-                        _value: _state/collection
+                        _result: _collection
                         _pop-state
-                        _state/result: _value
                     )
                     '|
                     literal (_pop-state)
                     'fail
-                ]
+                ]]
                 (keep child)        -> [
                     [child]
                     literal (
-                        _value: either map? _state/collection [
-                            unless find _state/collection 'children [
-                                _state/collection/children: make block! 0
+                        _coll: either map? _collection [
+                            unless find _collection 'children [
+                                _collection/children: make block! 0
                             ]
-                            _state/collection/children
+                            _collection/children
                         ] [
-                            _state/collection
+                            _collection
                         ]
-                        unless block? :_value [
+                        unless block? :_coll [
                             cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]
                         ]
                     )
                     either only? [
-                        literal (append/only _value :_state/result)
+                        literal (append/only _coll :_result)
                     ] [
-                        literal (append _value :_state/result)
+                        literal (append _coll :_result)
                     ]
                 ]
                 (into child)        -> [
@@ -213,7 +204,7 @@ parse-compiler: context [
                     'into [child]
                 ]
             ] compiled-rule
-            append compiled-rule [| (_state/result: none)]
+            append compiled-rule [| (_result: none)]
             append/only result compiled-rule
         ]
         context result
