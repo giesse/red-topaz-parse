@@ -26,19 +26,16 @@ Red [
     }
 ]
 
-unless exists? %parse-compiler.red [
-    print "Downloading pre-built version of parse-compiler.red for bootstrap..."
-    write %parse-compiler.red read https://github.com/giesse/red-topaz-parse/releases/download/bootstrap.1/parse-compiler.red
+unless exists? %compiled-rules.red [
+    print "Downloading pre-built version of compiled-rules.red for bootstrap..."
+    write %compiled-rules.red read https://github.com/giesse/red-topaz-parse/releases/download/bootstrap.2/compiled-rules.red
 ]
 
 do %parse-compiler.red
 do %parse-parse.red
 
-template: load %parse-compiler-template.red
-
-print "Building new parse-compiler.red..."
+print "Building new compiled-rules.red..."
 compiled-rules: parse-compiler/compile-rules in parse-parse 'alternatives
-change find/tail select template 'context [compiled-rules:] compiled-rules
-write %parse-compiler.red mold/only template
+write %compiled-rules.red mold/all compiled-rules
 
 print "All done!"

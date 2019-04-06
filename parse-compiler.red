@@ -29,7 +29,10 @@ Red [
 do %ast-tools.red
 
 parse-compiler: context [
-    compiled-rules: []
+    unless exists? %compiled-rules.red [
+        do make error! "%compiled-rules.red missing. Please do %make.red first."
+    ]
+    compiled-rules: do load %compiled-rules.red
 
     compile-rules*: function [result name rules] [
         compiled-rules/_collection: compiled-rules/_result: none
