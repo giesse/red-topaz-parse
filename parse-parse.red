@@ -58,7 +58,7 @@ parse-parse: context [
             |
             name: ['end | 'here]
             |
-            name: 'into type: opt [datatype! | typeset! | word!] keep top-level
+            name: 'into type: opt [datatype! | typeset! | 'block! | 'paren! | 'path!] keep top-level
             |
             name: 'debug keep string!
             |

@@ -13,4 +13,14 @@
     result: {[[set _result word! into [some [set _result word!]] set _result word!] | (_result: none)]}
     type: string!
     status: Pass
+) #(
+    test: [mold select parse-compiler/compile-rules [keep 'something] 'rules]
+    result: {[[set _result [ahead word! 'something]] (^/    _coll: either map? _collection [^/        unless find _collection 'children [^/            _collection/children: make block! 0^/        ] ^/        _collection/children^/    ] [^/        _collection^/    ] ^/    unless block? :_coll [^/        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/    ]^/) (append _coll :_result) | (_result: none)]}
+    type: string!
+    status: Pass
+) #(
+    test: [mold select parse-compiler/compile-rules [] 'rules]
+    result: {*** Script Error: child has no value^/*** Where: get^/*** Stack: run-test-file transform-tree transform-node }
+    type: error!
+    status: Failure
 )

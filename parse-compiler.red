@@ -33,12 +33,14 @@ parse-compiler: context [
         do make error! "%compiled-rules.red missing. Please do %make.red first."
     ]
     compiled-rules: do load %compiled-rules.red
+    alternatives: compiled-rules/alternatives
 
     compile-rules*: function [result name rules] [
-        compiled-rules/_collection: compiled-rules/_result: none
-        clear compiled-rules/_stack
-        parse rules compiled-rules/alternatives
-        put result name compiled-rules/_result
+        compiled-rules/_reset
+        unless parse rules [alternatives to end] [
+            cause-error 'script 'invalid-arg [rules]
+        ]
+        put result name ast: compiled-rules/_result
         handle-word: function [old-node new-node] [
             word: first old-node/children
             value: get word
@@ -60,11 +62,122 @@ parse-compiler: context [
                 ]
             ]
         ]
-        transform-tree select result name [
+        transform-tree ast [
             (sequence)           -> (none)
             (sequence child)     -> child
             (alternatives child) -> child
             (word .)             -> handle-word
+        ]
+        paren: func [block] [reduce [to paren! compose/only/deep block]]
+        put result name tree-to-block ast [
+            (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
+            (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
+            (end)               -> ['end literal (_result: none)]
+            (skip)              -> ['set '_result 'skip]
+            (paren code)        -> [(paren [_result: (code)])]
+            (opt child)         -> [[[child] '| literal (_result: none)]]
+            (any child)         -> ['any [[child] '| literal (_result: none) 'fail]]
+            (some child)        -> ['some [child]]
+            (not child)         -> ['not [child]]
+            (literal value)     -> ['set '_result 'quote value]
+            (rule word)         -> [
+                literal (_push-state)
+                word
+                literal (_pop-state)
+                '|
+                literal (_pop-state)
+                'fail
+            ]
+            (match-value value) -> [
+                ; Red parse wants [some/path] rather than ['some/path] to match a literal path
+                ; also there's a bug with lit-words, you need [ahead word! 'some-word] to work around it
+                (
+                    rule: switch/default type?/word :value [
+                        lit-path! [reduce [to path! value]]
+                        lit-word! [compose/deep [[ahead word! (value)]]]
+                    ] [
+                        reduce [:value]
+                    ]
+                    []
+                )
+                either (.parent = 'not) [
+                    (rule)
+                ] [
+                    'set '_result (rule)
+                ]
+            ]
+            (match-type type)   -> [
+                either (.parent = 'not) [
+                    type
+                ] [
+                    'set '_result type
+                ]
+            ]
+            (object child)      -> [[
+                literal (
+                    _push-state
+                    _collection: make map! []
+                )
+                [child]
+                literal (
+                    _result: _collection
+                    _pop-state
+                )
+                '|
+                literal (_pop-state)
+                'fail
+            ]]
+            (set word child)    -> [
+                [child]
+                (paren [
+                    either map? _collection [
+                        put _collection (to lit-word! word) :_result
+                    ] [
+                        set (to lit-word! word) :_result
+                    ]
+                ])
+            ]
+            (collect child)     -> [[
+                literal (
+                    _push-state
+                    _collection: make block! 0
+                )
+                [child]
+                literal (
+                    _result: _collection
+                    _pop-state
+                )
+                '|
+                literal (_pop-state)
+                'fail
+            ]]
+            (keep child)        -> [
+                [child]
+                literal (
+                    _coll: either map? _collection [
+                        unless find _collection 'children [
+                            _collection/children: make block! 0
+                        ]
+                        _collection/children
+                    ] [
+                        _collection
+                    ]
+                    unless block? :_coll [
+                        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]
+                    ]
+                )
+                either only? [
+                    literal (append/only _coll :_result)
+                ] [
+                    literal (append _coll :_result)
+                ]
+            ]
+            (into child)        -> [
+                if (value? 'type) [
+                    'ahead type
+                ]
+                'into [child]
+            ]
         ]
     ]
 
@@ -77,6 +190,11 @@ parse-compiler: context [
         ]
         _pop-state: does [
             _collection: take/last _stack
+        ]
+
+        _reset: does [
+            _collection: _result: none
+            clear _stack
         ]
     ]
 
@@ -93,124 +211,7 @@ parse-compiler: context [
             ]
         ]
         compile-rules* parsed-rules name rules
-        result: copy runtime
-        paren: func [block] [reduce [to paren! compose/only/deep block]]
-        foreach [name ast] body-of parsed-rules [
-            append result name
-            compiled-rule: copy []
-            tree-to-block/into ast [
-                (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
-                (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
-                (end)               -> ['end literal (_result: none)]
-                (skip)              -> ['set '_result 'skip]
-                (paren code)        -> [(paren [_result: (code)])]
-                (opt child)         -> [[[child] '| literal (_result: none)]]
-                (any child)         -> ['any [child]]
-                (some child)        -> ['some [child]]
-                (not child)         -> ['not [child]]
-                (literal value)     -> ['set '_result 'quote value]
-                (rule word)         -> [
-                    literal (_push-state) 
-                    word
-                    literal (_pop-state)
-                    '|
-                    literal (_pop-state)
-                    'fail
-                ]
-                (match-value value) -> [
-                    ; Red parse wants [some/path] rather than ['some/path] to match a literal path
-                    ; also there's a bug with lit-words, you need [ahead word! 'some-word] to work around it
-                    (
-                        rule: switch/default type?/word :value [
-                            lit-path! [reduce [to path! value]]
-                            lit-word! [compose/deep [[ahead word! (value)]]]
-                        ] [
-                            reduce [:value]
-                        ]
-                        []
-                    )
-                    either (.parent = 'not) [
-                        (rule)
-                    ] [
-                        'set '_result (rule)
-                    ]
-                ]
-                (match-type type)   -> [
-                    either (.parent = 'not) [
-                        type
-                    ] [
-                        'set '_result type
-                    ]
-                ]
-                (object child)      -> [[
-                    literal (
-                        _push-state
-                        _collection: make map! []
-                    )
-                    [child]
-                    literal (
-                        _result: _collection
-                        _pop-state
-                    )
-                    '|
-                    literal (_pop-state)
-                    'fail
-                ]]
-                (set word child)    -> [
-                    [child]
-                    (paren [
-                        either map? _collection [
-                            put _collection (to lit-word! word) :_result
-                        ] [
-                            set (to lit-word! word) :_result
-                        ]
-                    ])
-                ]
-                (collect child)     -> [[
-                    literal (
-                        _push-state
-                        _collection: make block! 0
-                    )
-                    [child]
-                    literal (
-                        _result: _collection
-                        _pop-state
-                    )
-                    '|
-                    literal (_pop-state)
-                    'fail
-                ]]
-                (keep child)        -> [
-                    [child]
-                    literal (
-                        _coll: either map? _collection [
-                            unless find _collection 'children [
-                                _collection/children: make block! 0
-                            ]
-                            _collection/children
-                        ] [
-                            _collection
-                        ]
-                        unless block? :_coll [
-                            cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]
-                        ]
-                    )
-                    either only? [
-                        literal (append/only _coll :_result)
-                    ] [
-                        literal (append _coll :_result)
-                    ]
-                ]
-                (into child)        -> [
-                    if (value? 'type) [
-                        'ahead type
-                    ]
-                    'into [child]
-                ]
-            ] compiled-rule
-            append compiled-rule [| (_result: none)]
-            append/only result compiled-rule
-        ]
+        result: append copy runtime body-of parsed-rules
         context result
     ]
 

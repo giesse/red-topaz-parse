@@ -22,9 +22,21 @@ mold-flat: func [value size] [
 
 review-test-results: function [file] [
     results: load/all file
+    print "Summary of failed tests:"
+    repeat i length? results [
+        result: pick results i
+        if result/status = 'Failure [
+            print [i ")" mold-flat result/test 80]
+        ]
+    ]
+    to-review: copy [Unknown]
+    if find ["y" "yes"] ask "^/Review failed tests? " [
+        append to-review 'Failure
+    ]
     foreach result results [
-        if result/status = 'Unknown [
+        if find to-review result/status [
             print ["^/Test:" mold-flat result/test 80]
+            print ["Status:" result/status
             if result/note [print result/note]
             switch/default result/type [
                 error! [
@@ -44,7 +56,11 @@ review-test-results: function [file] [
                         result/status: 'Failure
                         break
                     ]
-                    "" "u" "unknown" [
+                    "" [
+                        break
+                    ]
+                    "u" "unknown" [
+                        result/status: 'Unknown
                         break
                     ]
                     "pr" "print" [
@@ -58,19 +74,12 @@ review-test-results: function [file] [
                 ] [
                     print {Type "p" or "pass" etc. to mark the test as passed;
 "pr" or "print" to print the whole test and results; etc.
-Just hitting RETURN will leave the test status as Unknown.}
+Just hitting RETURN will leave the test status as it is.}
                 ]
             ]
         ]
     ]
     write file mold/only/all results
-    print "^/Summary of failed tests:"
-    repeat i length? results [
-        result: pick results i
-        if result/status = 'Failure [
-            print [i ")" mold-flat result/test 80]
-        ]
-    ]
 ]
 
 foreach file read %tests/ [
