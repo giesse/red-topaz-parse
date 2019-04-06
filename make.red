@@ -28,7 +28,7 @@ Red [
 
 unless exists? %compiled-rules.red [
     print "Downloading pre-built version of compiled-rules.red for bootstrap..."
-    write %compiled-rules.red read https://github.com/giesse/red-topaz-parse/releases/download/bootstrap.2/compiled-rules.red
+    write/binary %compiled-rules.red read/binary https://github.com/giesse/red-topaz-parse/releases/download/bootstrap.2/compiled-rules.red
 ]
 
 do %parse-compiler.red
