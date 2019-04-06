@@ -204,6 +204,11 @@ emit-production: function [output rules node production] [
                 emit-production output rules node blk
             )
             |
+            'if set condition [word! | paren!] set true-block block! (
+                condition: either word? condition [get condition] [do condition]
+                if condition [emit-production output rules node true-block]
+            )
+            |
             'literal set value skip (append/only output :value)
             |
             set value word! (

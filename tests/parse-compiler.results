@@ -8,4 +8,9 @@
     result: {[[(^/    _push-state ^/    _collection: make block! 0^/) [some [[set _result integer!] (^/    _coll: either map? _collection [^/        unless find _collection 'children [^/            _collection/children: make block! 0^/        ] ^/        _collection/children^/    ] [^/        _collection^/    ] ^/    unless block? :_coll [^/        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/    ]^/) (append _coll :_result)]] (^/    _result: _collection ^/    _pop-state^/) | (_pop-state) fail] | (_result: none)]}
     type: string!
     status: Pass
+) #(
+    test: [mold select parse-compiler/compile-rules [word! into [some word!] word!] 'rules]
+    result: {[[set _result word! into [some [set _result word!]] set _result word!] | (_result: none)]}
+    type: string!
+    status: Pass
 )

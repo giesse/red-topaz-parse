@@ -104,7 +104,7 @@ parse-compiler: context [
                 (end)               -> ['end literal (_result: none)]
                 (skip)              -> ['set '_result 'skip]
                 (paren code)        -> [(paren [_result: (code)])]
-                (opt child)         -> ['opt [child]]
+                (opt child)         -> [[[child] '| literal (_result: none)]]
                 (any child)         -> ['any [child]]
                 (some child)        -> ['some [child]]
                 (not child)         -> ['not [child]]
@@ -201,9 +201,9 @@ parse-compiler: context [
                     ]
                 ]
                 (into child)        -> [
-                    either (value? 'type) [
+                    if (value? 'type) [
                         'ahead type
-                    ] []
+                    ]
                     'into [child]
                 ]
             ] compiled-rule

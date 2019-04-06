@@ -70,9 +70,9 @@
     status: Pass
 ) #(
     test: [topaz-parse [a [b c d] e] [word! into [some word!] word!]]
-    result: {*** Script Error: PARSE - unexpected end of rule after: into^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    result: e
+    type: word!
+    status: Pass
 ) #(
     test: [topaz-parse [a b c d] [word! [integer!] | word! word!]]
     result: b
@@ -146,14 +146,14 @@
     status: Pass
 ) #(
     test: [topaz-parse [a [b c] d] [word! into [word! word!]]]
-    result: {*** Script Error: PARSE - unexpected end of rule after: into^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    result: c
+    type: word!
+    status: Pass
 ) #(
     test: [topaz-parse [a [b c] d] [word! into [word! word!] word!]]
-    result: {*** Script Error: PARSE - unexpected end of rule after: into^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    result: d
+    type: word!
+    status: Pass
 ) #(
     test: [topaz-parse [a [b c] d] [word! into paren! [word! word!]]]
     type: none!
