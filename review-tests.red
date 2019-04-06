@@ -30,13 +30,14 @@ review-test-results: function [file] [
         ]
     ]
     to-review: copy [Unknown]
-    if find ["y" "yes"] ask "^/Review failed tests? " [
+    print ""
+    if find ["y" "yes"] ask "Review failed tests? " [
         append to-review 'Failure
     ]
     foreach result results [
         if find to-review result/status [
             print ["^/Test:" mold-flat result/test 80]
-            print ["Status:" result/status
+            print ["Status:" result/status]
             if result/note [print result/note]
             switch/default result/type [
                 error! [
@@ -72,7 +73,8 @@ review-test-results: function [file] [
                     ]
                     "q" "quit" [quit]
                 ] [
-                    print {Type "p" or "pass" etc. to mark the test as passed;
+                    print
+{Type "p" or "pass" etc. to mark the test as passed;
 "pr" or "print" to print the whole test and results; etc.
 Just hitting RETURN will leave the test status as it is.}
                 ]

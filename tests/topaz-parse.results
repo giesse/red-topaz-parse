@@ -114,9 +114,8 @@
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [any []]]
-    result: {*** Script Error: child has no value^/*** Where: get^/*** Stack: run-test-file topaz-parse transform-tree transform-node transform-node transform-node }
-    type: error!
-    status: Failure
+    type: none!
+    status: Pass
 ) #(
     test: [
         output: copy [] 
