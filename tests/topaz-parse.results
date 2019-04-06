@@ -80,29 +80,28 @@
     status: Pass
 ) #(
     test: [topaz-parse [literal] [literal literal]]
-    result: {*** Script Error: PARSE - invalid rule or usage of rule: literal^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    result: literal
+    type: word!
+    status: Pass
 ) #(
     test: [topaz-parse [literal] [quote literal]]
-    result: {*** Script Error: PARSE - invalid rule or usage of rule: literal^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    result: literal
+    type: word!
+    status: Pass
 ) #(
     test: [topaz-parse [quote] [literal quote]]
-    result: {*** Script Error: PARSE - invalid rule or usage of rule: literal^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    result: quote
+    type: word!
+    status: Pass
 ) #(
     test: [topaz-parse [quote] [quote quote]]
-    result: {*** Script Error: PARSE - invalid rule or usage of rule: literal^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    result: quote
+    type: word!
+    status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [literal literal]]
-    result: {*** Script Error: PARSE - invalid rule or usage of rule: literal^/*** Where: parse^/*** Stack: run-test-file topaz-parse }
-    type: error!
-    status: Failure
+    type: none!
+    status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [opt word! integer!]]
     result: 1

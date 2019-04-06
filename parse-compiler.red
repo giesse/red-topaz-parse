@@ -108,6 +108,7 @@ parse-compiler: context [
                 (any child)         -> ['any [child]]
                 (some child)        -> ['some [child]]
                 (not child)         -> ['not [child]]
+                (literal value)     -> ['set '_result 'quote value]
                 (rule word)         -> [
                     literal (_push-state) 
                     word
