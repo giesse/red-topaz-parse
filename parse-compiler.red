@@ -69,6 +69,22 @@ parse-compiler: context [
             (word .)             -> handle-word
         ]
         paren: func [block] [reduce [to paren! compose/only/deep block]]
+        handle-typeset: func [type] [
+            either typeset? type [
+                reduce [
+                    collect [
+                        s: []
+                        foreach t to block! type [
+                            keep s
+                            keep t
+                            s: '|
+                        ]
+                    ]
+                ]
+            ] [
+                type
+            ]
+        ]
         put result name tree-to-block ast [
             (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
             (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
@@ -81,7 +97,15 @@ parse-compiler: context [
             (not child)         -> ['not [child]]
             (literal value)     -> ['set '_result 'quote value]
             (none)              -> [(_result: none)]
-            (get type)          -> ['set '_result 'word! 'if (paren [(type) = type? _result: get/any _result])]
+            (get type)          -> [[
+                'set '_result (handle-typeset type)
+                '|
+                'set '_result 'word! 'if either (typeset? type) [
+                    (paren [find (to block! type) type?/word _result: get/any _result])
+                ] [
+                    (paren [(type) = type? _result: get/any _result])
+                ]
+            ]]
             (rule word)         -> [
                 literal (_push-state)
                 word
@@ -110,9 +134,9 @@ parse-compiler: context [
             ]
             (match-type type)   -> [
                 either (.parent = 'not) [
-                    type
+                    (handle-typeset type)
                 ] [
-                    'set '_result type
+                    'set '_result (handle-typeset type)
                 ]
             ]
             (object child)      -> [[
@@ -176,7 +200,7 @@ parse-compiler: context [
             ]
             (into child)        -> [
                 if (value? 'type) [
-                    'ahead type
+                    'ahead (handle-typeset type)
                 ]
                 'into [child]
             ]

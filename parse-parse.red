@@ -27,6 +27,8 @@ Red [
 ]
 
 parse-parse: context [
+    datatype|typeset: make typeset! [datatype! typeset!]
+
     alternatives: [
         object [name: ('alternatives) keep sequence any ['| keep sequence] end]
     ]
@@ -58,17 +60,17 @@ parse-parse: context [
             |
             name: ['end | 'here]
             |
-            name: 'into type: opt [datatype! | typeset! | 'block! | 'paren! | 'path!] keep top-level
+            name: 'into type: opt get datatype|typeset keep top-level
             |
             name: 'debug keep string!
             |
-            name: 'get keep [datatype! | typeset! | 'block! | 'integer!]
+            name: 'get keep get datatype|typeset
             |
             keep word! name: ('word)
             |
             keep/only paren! name: ('paren)
             |
-            keep [datatype! | typeset!] name: ('match-type)
+            keep get datatype|typeset name: ('match-type)
         ]
         |
         into block! alternatives
