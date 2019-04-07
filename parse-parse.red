@@ -66,11 +66,12 @@ parse-parse: context [
             |
             name: 'get keep get datatype|typeset
             |
-            keep word! name: ('word)
+            keep get datatype|typeset name: ('match-type)
+            |
+            ; handle-word is defined in %parse-compiler.red
+            keep word! (handle-word collection)
             |
             keep/only paren! name: ('paren)
-            |
-            keep get datatype|typeset name: ('match-type)
         ]
         |
         into block! alternatives

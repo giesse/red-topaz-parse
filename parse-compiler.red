@@ -35,38 +35,31 @@ parse-compiler: context [
     compiled-rules: do load %compiled-rules.red
     alternatives: compiled-rules/alternatives
 
+    handle-word: function [word-node] [
+        word: first word-node/children
+        value: get word
+        word-node/name: either block? :value ['rule*] ['match-value]
+    ]
+
     compile-rules*: function [result name rules] [
         compiled-rules/_reset
         unless parse rules [alternatives to end] [
             cause-error 'script 'invalid-arg [rules]
         ]
         put result name ast: compiled-rules/_result
-        handle-word: function [old-node new-node] [
+        compile-subrule: function [old-node new-node] [
             word: first old-node/children
-            value: get word
-            case [
-                block? :value [
-                    new-node/name: 'rule
-                    new-node/children: old-node/children
-                    unless find result word [
-                        compile-rules* result word value
-                    ]
-                ]
-                any [datatype? :value typeset? :value] [
-                    new-node/name: 'match-type
-                    new-node/children: reduce [value]
-                ]
-                'else [
-                    new-node/name: 'match-value
-                    new-node/children: old-node/children
-                ]
+            new-node/name: 'rule
+            new-node/children: old-node/children
+            unless find result word [
+                compile-rules* result word get word
             ]
         ]
         transform-tree ast [
             (sequence)           -> (none)
             (sequence child)     -> child
             (alternatives child) -> child
-            (word .)             -> handle-word
+            (rule* .)            -> compile-subrule
         ]
         paren: func [block] [reduce [to paren! compose/only/deep block]]
         handle-typeset: func [type] [
@@ -142,11 +135,11 @@ parse-compiler: context [
             (object child)      -> [[
                 literal (
                     _push-state
-                    _collection: make map! []
+                    collection: make map! []
                 )
                 [child]
                 literal (
-                    _result: _collection
+                    _result: collection
                     _pop-state
                 )
                 '|
@@ -156,8 +149,8 @@ parse-compiler: context [
             (set word child)    -> [
                 [child]
                 (paren [
-                    either map? _collection [
-                        put _collection (to lit-word! word) :_result
+                    either map? collection [
+                        put collection (to lit-word! word) :_result
                     ] [
                         set (to lit-word! word) :_result
                     ]
@@ -166,11 +159,11 @@ parse-compiler: context [
             (collect child)     -> [[
                 literal (
                     _push-state
-                    _collection: make block! 0
+                    collection: make block! 0
                 )
                 [child]
                 literal (
-                    _result: _collection
+                    _result: collection
                     _pop-state
                 )
                 '|
@@ -180,13 +173,13 @@ parse-compiler: context [
             (keep child)        -> [
                 [child]
                 literal (
-                    _coll: either map? _collection [
-                        unless find _collection 'children [
-                            _collection/children: make block! 0
+                    _coll: either map? collection [
+                        unless find collection 'children [
+                            collection/children: make block! 0
                         ]
-                        _collection/children
+                        collection/children
                     ] [
-                        _collection
+                        collection
                     ]
                     unless block? :_coll [
                         cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]
@@ -208,18 +201,18 @@ parse-compiler: context [
     ]
 
     runtime: [
-        _coll: _collection: _result: none
+        _coll: collection: _result: none
         _stack: []
 
         _push-state: does [
-            append _stack _collection
+            append _stack collection
         ]
         _pop-state: does [
-            _collection: take/last _stack
+            collection: take/last _stack
         ]
 
         _reset: does [
-            _collection: _result: none
+            collection: _result: none
             clear _stack
         ]
     ]
