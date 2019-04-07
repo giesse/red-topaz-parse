@@ -32,7 +32,7 @@ parse-compiler: context [
     unless exists? %compiled-rules.red [
         do make error! "%compiled-rules.red missing. Please do %make.red first."
     ]
-    compiled-rules: do load %compiled-rules.red
+    compiled-rules: do bind load %compiled-rules.red 'handle-word
     alternatives: compiled-rules/alternatives
 
     handle-word: function [word-node] [
@@ -42,11 +42,10 @@ parse-compiler: context [
     ]
 
     compile-rules*: function [result name rules] [
-        compiled-rules/_reset
-        unless parse rules [alternatives to end] [
+        unless ast: compiled-rules/_parse rules [
             cause-error 'script 'invalid-arg [rules]
         ]
-        put result name ast: compiled-rules/_result
+        put result name ast
         compile-subrule: function [old-node new-node] [
             word: first old-node/children
             new-node/name: 'rule
@@ -55,12 +54,14 @@ parse-compiler: context [
                 compile-rules* result word get word
             ]
         ]
+        ; optimize the AST and handle sub-rules
         transform-tree ast [
             (sequence)           -> (none)
             (sequence child)     -> child
             (alternatives child) -> child
             (rule* .)            -> compile-subrule
         ]
+        ; convert the AST to a Red PARSE block
         paren: func [block] [reduce [to paren! compose/only/deep block]]
         handle-typeset: func [type] [
             either typeset? type [
@@ -231,6 +232,12 @@ parse-compiler: context [
         ]
         compile-rules* parsed-rules name rules
         result: append copy runtime body-of parsed-rules
+        append result compose/deep [
+            _parse: func [input] [
+                _reset
+                if parse input [(name) to end] [:_result]
+            ]
+        ]
         context result
     ]
 

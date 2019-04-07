@@ -5,7 +5,7 @@
     status: Pass
 ) #(
     test: [mold select parse-compiler/compile-rules [collect some [keep integer!]] 'rules]
-    result: {[[(^/    _push-state ^/    _collection: make block! 0^/) [some [[set _result integer!] (^/    _coll: either map? _collection [^/        unless find _collection 'children [^/            _collection/children: make block! 0^/        ] ^/        _collection/children^/    ] [^/        _collection^/    ] ^/    unless block? :_coll [^/        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/    ]^/) (append _coll :_result)]] (^/    _result: _collection ^/    _pop-state^/) | (_pop-state) fail]]}
+    result: {[[(^/    _push-state ^/    collection: make block! 0^/) [some [[set _result integer!] (^/    _coll: either map? collection [^/        unless find collection 'children [^/            collection/children: make block! 0^/        ] ^/        collection/children^/    ] [^/        collection^/    ] ^/    unless block? :_coll [^/        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/    ]^/) (append _coll :_result)]] (^/    _result: collection ^/    _pop-state^/) | (_pop-state) fail]]}
     type: string!
     status: Pass
 ) #(
@@ -15,7 +15,7 @@
     status: Pass
 ) #(
     test: [mold select parse-compiler/compile-rules [keep 'something] 'rules]
-    result: {[[set _result [ahead word! 'something]] (^/    _coll: either map? _collection [^/        unless find _collection 'children [^/            _collection/children: make block! 0^/        ] ^/        _collection/children^/    ] [^/        _collection^/    ] ^/    unless block? :_coll [^/        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/    ]^/) (append _coll :_result)]}
+    result: {[[set _result [ahead word! 'something]] (^/    _coll: either map? collection [^/        unless find collection 'children [^/            collection/children: make block! 0^/        ] ^/        collection/children^/    ] [^/        collection^/    ] ^/    unless block? :_coll [^/        cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/    ]^/) (append _coll :_result)]}
     type: string!
     status: Pass
 ) #(
