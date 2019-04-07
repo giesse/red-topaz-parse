@@ -62,6 +62,8 @@ parse-parse: context [
             |
             name: 'debug keep string!
             |
+            name: 'get keep [datatype! | typeset! | 'block! | 'integer!]
+            |
             keep word! name: ('word)
             |
             keep/only paren! name: ('paren)

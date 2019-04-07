@@ -81,6 +81,7 @@ parse-compiler: context [
             (not child)         -> ['not [child]]
             (literal value)     -> ['set '_result 'quote value]
             (none)              -> [(_result: none)]
+            (get type)          -> ['set '_result 'word! 'if (paren [(type) = type? _result: get/any _result])]
             (rule word)         -> [
                 literal (_push-state)
                 word
@@ -235,6 +236,7 @@ parse-compiler: context [
             (match-value value) -> [value]
             (match-type type)   -> [type]
             (into child)        -> ['into (either value? 'type [type] [[]]) child]
+            (get type)          -> ['get type]
         ]
     ]
 
@@ -263,6 +265,7 @@ parse-compiler: context [
             (rule word)         -> [.indent "Sub-rule " (mold word) #"^/"]
             (match-value value) -> [.indent "Match value " (mold-flat value) #"^/"]
             (match-type type)   -> [.indent "Match type " (mold-flat type) #"^/"]
+            (get type)          -> [.indent "Get word if it refers to " (mold type) #"^/"]
             (into child)        -> [
                 .indent (
                     either value? 'type [reduce ["Into " mold type]] ["Into (default)"]

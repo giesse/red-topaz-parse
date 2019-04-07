@@ -89,3 +89,9 @@ Red [
 [topaz-parse [a (b c) d] [word! into paren! [word! word!]]]
 [topaz-parse [a (b c) d] [word! into paren! [word! word!] word!]]
 [topaz-parse [1 1.2 10%] [some number!]]
+[
+    word: [a block]
+    topaz-parse [word] [block!]
+]
+[topaz-parse [word] [get block!]]
+[topaz-parse [word] [get integer!]]

@@ -7,3 +7,4 @@ Red [
 [mold select parse-compiler/compile-rules [word! into [some word!] word!] 'rules]
 [mold select parse-compiler/compile-rules [keep 'something] 'rules]
 [mold select parse-compiler/compile-rules [] 'rules]
+[mold select parse-compiler/compile-rules [get block!] 'rules]

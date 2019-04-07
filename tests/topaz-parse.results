@@ -175,4 +175,17 @@
     result: 10%
     type: percent!
     status: Pass
+) #(
+    test: [word: [a block] topaz-parse [word] [block!]]
+    type: none!
+    status: Pass
+) #(
+    test: [topaz-parse [word] [get block!]]
+    result: [a block]
+    type: block!
+    status: Pass
+) #(
+    test: [topaz-parse [word] [get integer!]]
+    type: none!
+    status: Pass
 )

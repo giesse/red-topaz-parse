@@ -23,4 +23,9 @@
     result: "[none]"
     type: string!
     status: Pass
+) #(
+    test: [mold select parse-compiler/compile-rules [get block!] 'rules]
+    result: {[set _result word! if (block! = type? _result: get/any _result)]}
+    type: string!
+    status: Pass
 )
