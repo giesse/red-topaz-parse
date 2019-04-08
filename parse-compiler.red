@@ -35,31 +35,22 @@ parse-compiler: context [
     compiled-rules: do bind load %compiled-rules.red 'handle-word
     alternatives: compiled-rules/alternatives
 
-    handle-word: function [word-node] [
-        word: first word-node/children
-        value: get word
-        word-node/name: either block? :value ['rule*] ['match-value]
-    ]
-
     compile-rules*: function [result name rules] [
+        more-rules: copy []
         unless ast: compiled-rules/_parse rules [
             cause-error 'script 'invalid-arg [rules]
         ]
         put result name ast
-        compile-subrule: function [old-node new-node] [
-            word: first old-node/children
-            new-node/name: 'rule
-            new-node/children: old-node/children
+        foreach [word block] more-rules [
             unless find result word [
-                compile-rules* result word get word
+                compile-rules* result word block
             ]
         ]
-        ; optimize the AST and handle sub-rules
+        ; optimize the AST
         transform-tree ast [
             (sequence)           -> (none)
             (sequence child)     -> child
             (alternatives child) -> child
-            (rule* .)            -> compile-subrule
         ]
         ; convert the AST to a Red PARSE block
         paren: func [block] [reduce [to paren! compose/only/deep block]]
@@ -112,7 +103,7 @@ parse-compiler: context [
                 ; Red parse wants [some/path] rather than ['some/path] to match a literal path
                 ; also there's a bug with lit-words, you need [ahead word! 'some-word] to work around it
                 (
-                    rule: switch/default type?/word :value [
+                    rl: switch/default type?/word :value [
                         lit-path! [reduce [to path! value]]
                         lit-word! [compose/deep [[ahead word! (value)]]]
                     ] [
@@ -121,9 +112,9 @@ parse-compiler: context [
                     []
                 )
                 either (.parent = 'not) [
-                    (rule)
+                    (rl)
                 ] [
-                    'set '_result (rule)
+                    'set '_result (rl)
                 ]
             ]
             (match-type type)   -> [
@@ -200,6 +191,35 @@ parse-compiler: context [
             ]
         ]
     ]
+
+    nargs: 0
+    handle-word: function [word-node] bind [
+        nargs: 0
+        word: first word-node/children
+        value: get word
+        word-node/name: case [
+            block? :value [
+                append more-rules word
+                append/only more-rules value
+                'rule
+            ]
+            all [map? :value value/name = 'rule-function] [
+                unless find result word [
+                    unless result/_functions [
+                        result/_functions: make map! []
+                    ]
+                    put result/_functions word value
+                    append more-rules word
+                    append/only more-rules value/body
+                ]
+                nargs: length? value/parsed-spec
+                'rule-function
+            ]
+            'else [
+                'match-value
+            ]
+        ]
+    ] :compile-rules*
 
     runtime: [
         _coll: collection: _result: none
@@ -298,3 +318,61 @@ parse-compiler: context [
         ] copy ""
     ]
 ]
+
+rule: context [
+    func-spec: [
+        opt string!
+        collect [
+            any [
+                refinement! (do make error! "Sorry, refinements not supported in parse functions")
+                |
+                keep object [
+                    name: word!
+                    opt [type: block! (collection/type: make typeset! collection/type)]
+                    opt string!
+                ]
+            ]
+        ]
+    ]
+    func-spec: parse-compiler/compile-rules 'func-spec
+
+    extract-set-words*: [
+        any [
+            keep set-word!
+            |
+            into extract-set-words*
+            |
+            skip
+        ]
+    ]
+    extract-set-words: [collect [extract-set-words* end]]
+    extract-set-words: parse-compiler/compile-rules 'extract-set-words
+
+    rule: function [
+        "Define a TOPAZ-PARSE rule that can take arguments and has local words"
+        spec [block!] "Arguments specification"
+        body [block!] "TOPAZ-PARSE rule"
+    ] [
+        result: make map! []
+        result/name: 'rule-function
+        result/spec: spec
+        unless result/parsed-spec: func-spec/_parse spec [
+            cause-error 'script 'invalid-arg [spec]
+        ]
+        result/words: make block! 0
+        foreach arg result/parsed-spec [
+            append result/words to set-word! arg/name
+        ]
+        append result/words extract-set-words/_parse body
+        result/context: construct result/words
+        ; make sure they are in the correct order to use SET etc. (handles duplicates in original words block)
+        result/words: words-of result/context
+        result/body: bind body result/context
+        foreach arg result/parsed-spec [
+            arg/name: bind arg/name result/context
+        ]
+        result
+    ]
+]
+
+rule: :rule/rule

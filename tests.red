@@ -175,7 +175,7 @@ run-test-file: function [file] [
         ]
         append perf-data/samples time
         speed: time / perf-data/fastest
-        if speed > 1.05 [
+        if speed > 1.15 [
             print [tab "WARNING: Test" index? perf "ran" round/to speed 0.01 "times slower than fastest sample"]
             summary/perf-regressions: summary/perf-regressions + 1
         ]
