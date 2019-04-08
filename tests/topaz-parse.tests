@@ -95,3 +95,6 @@ Red [
 ]
 [topaz-parse [word] [get block!]]
 [topaz-parse [word] [get integer!]]
+[topaz-parse [1 2 3] [2 integer!]]
+[topaz-parse [1 2 3] [3 integer!]]
+[topaz-parse [1 2 3] [4 integer!]]

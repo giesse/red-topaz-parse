@@ -54,6 +54,8 @@ parse-parse: context [
         object [
             name: ['opt | 'any | 'some | 'not] keep element
             |
+            keep get integer! name: ('loop) keep element
+            |
             ['literal | 'quote] name: ('literal) keep *
             |
             ['skip | '*] name: ('skip)

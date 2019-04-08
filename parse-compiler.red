@@ -82,13 +82,14 @@ parse-compiler: context [
             (not child)         -> ['not [child]]
             (literal value)     -> ['set '_result 'quote value]
             (none)              -> [(_result: none)]
+            (loop n child)      -> [n [child]]
             (get type)          -> [[
                 'set '_result (handle-typeset type)
                 '|
                 'set '_result 'word! 'if either (typeset? type) [
-                    (paren [find (to block! type) type?/word _result: get/any _result])
+                    (paren [find (to block! type) type?/word set/any '_result get/any _result])
                 ] [
-                    (paren [(type) = type? _result: get/any _result])
+                    (paren [(type) = type? set/any '_result get/any _result])
                 ]
             ]]
             (rule word)         -> [

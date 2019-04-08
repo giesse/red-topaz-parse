@@ -188,4 +188,18 @@
     test: [topaz-parse [word] [get integer!]]
     type: none!
     status: Pass
+) #(
+    test: [topaz-parse [1 2 3] [2 integer!]]
+    result: 2
+    type: integer!
+    status: Pass
+) #(
+    test: [topaz-parse [1 2 3] [3 integer!]]
+    result: 3
+    type: integer!
+    status: Pass
+) #(
+    test: [topaz-parse [1 2 3] [4 integer!]]
+    type: none!
+    status: Pass
 )
