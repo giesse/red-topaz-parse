@@ -52,6 +52,7 @@ parse-compiler: context [
             (end)               -> ['end literal (_result: none)]
             (skip)              -> ['set '_result 'skip]
             (paren code)        -> [(paren [_result: (code)])]
+            (if code)           -> ['if code]
             (opt child)         -> [[[child] '| literal (_result: none)]]
             (any child)         -> ['any [[child] '| literal (_result: none) 'fail]]
             (some child)        -> ['some [child]]

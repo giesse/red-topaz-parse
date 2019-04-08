@@ -41,7 +41,7 @@ parse-parse: context [
             |
             [name: 'keep only?: (false) | 'keep/only name: ('keep) only?: (true)] keep top-level
             |
-            name: 'if keep element keep top-level
+            name: 'if keep/only paren!
             |
             name: 'either keep element keep into block! alternatives keep into block! alternatives
             |
