@@ -32,19 +32,13 @@ parse-compiler: context [
     unless exists? %compiled-rules.red [
         do make error! "%compiled-rules.red missing. Please do %make.red first."
     ]
-    compiled-rules: do bind load %compiled-rules.red 'handle-word
+    compiled-rules: do load %compiled-rules.red
 
     compile-rules*: function [result name rules] [
-        more-rules: copy []
         unless ast: compiled-rules/_parse rules [
             cause-error 'script 'invalid-arg [rules]
         ]
         put result name ast
-        foreach [word block] more-rules [
-            unless find result word [
-                compile-rules* result word block
-            ]
-        ]
         ; optimize the AST
         transform-tree ast [
             (sequence)           -> (none)
@@ -52,7 +46,6 @@ parse-compiler: context [
             (alternatives child) -> child
         ]
         ; convert the AST to a Red PARSE block
-        paren: func [block] [reduce [to paren! compose/only/deep block]]
         put result name tree-to-block ast [
             (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
             (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
@@ -65,17 +58,29 @@ parse-compiler: context [
             (not child)         -> ['not [child]]
             (literal value)     -> ['set '_result 'quote value]
             (none)              -> [(_result: none)]
-            (loop n child)      -> [n [child]]
+            (loop n child)      -> [(preserve-word n) n [child]]
             (get type)          -> [[
                 'set '_result type
                 '|
-                'set '_result 'word! 'if either (either word? type [typeset? get/any type] [typeset? type]) [
+                'set '_result 'word! 'if
+                either (
+                    either word? type [
+                        preserve-word type
+                        typeset? get type
+                    ] [typeset? type]
+                ) [
                     (paren [find (type) type? get/any _result])
                 ] [
                     (paren [(type) = type? get/any _result])
                 ]
             ]]
             (rule word)         -> [
+                (
+                    unless find result word [
+                        compile-rules* result word get word
+                    ]
+                    []
+                )
                 literal (_push-state)
                 word
                 literal (_pop-state)
@@ -102,6 +107,7 @@ parse-compiler: context [
                 ]
             ]
             (match-type type)   -> [
+                (preserve-word type)
                 either (.parent = 'not) [
                     type
                 ] [
@@ -169,12 +175,28 @@ parse-compiler: context [
             ]
             (into child)        -> [
                 if (value? 'type) [
+                    (preserve-word type)
                     'ahead type
                 ]
                 'into [child]
             ]
         ]
     ]
+
+    paren: func [block] [reduce [to paren! compose/only/deep block]]
+    preserve-word: func [word] bind [
+        if all [
+            word? word
+            ; would be nice to have system/catalog/datatypes :)
+            not find [
+                datatype! unset! none! logic! block! paren! string! file! url! char! integer! float! word!
+                set-word! lit-word! get-word! refinement! issue! native! action! op! function! path! lit-path!
+                set-path! get-path! routine! bitset! point! object! typeset! error! vector! hash! pair! percent!
+                tuple! map! binary! time! tag! email! handle! date!
+            ] word
+        ] [put result word get word]
+        []
+    ] :compile-rules*
 
     nargs: 0
     handle-word: function [word-node] bind [
@@ -183,8 +205,8 @@ parse-compiler: context [
         value: get word
         word-node/name: case [
             block? :value [
-                append more-rules word
-                append/only more-rules value
+                ;append more-rules word
+                ;append/only more-rules value
                 'rule
             ]
             all [map? :value value/name = 'rule-function] [
