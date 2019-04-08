@@ -51,6 +51,8 @@ parse-parse: context [
         element
     ]
     element: [
+        into block! alternatives
+        |
         object [
             name: ['opt | 'any | 'some | 'not] keep element
             |
@@ -70,13 +72,10 @@ parse-parse: context [
             |
             keep get datatype|typeset name: ('match-type)
             |
-            ; handle-word is defined in %parse-compiler.red
-            keep word! (handle-word collection)
+            keep get block! name: ('rule)
             |
             keep/only paren! name: ('paren)
         ]
-        |
-        into block! alternatives
         |
         object [name: ('match-value) keep/only *]
     ]

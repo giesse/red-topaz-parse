@@ -25,7 +25,7 @@
     status: Pass
 ) #(
     test: [mold select parse-compiler/compile-rules [get block!] 'rules]
-    result: {[[set _result block! | set _result word! if (block! = type? set/any '_result get/any _result)]]}
+    result: {[[set _result block! | set _result word! if (block! = type? get/any _result)]]}
     type: string!
     status: Pass
 )

@@ -181,8 +181,8 @@
     status: Pass
 ) #(
     test: [topaz-parse [word] [get block!]]
-    result: [a block]
-    type: block!
+    result: word
+    type: word!
     status: Pass
 ) #(
     test: [topaz-parse [word] [get integer!]]

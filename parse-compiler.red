@@ -33,7 +33,6 @@ parse-compiler: context [
         do make error! "%compiled-rules.red missing. Please do %make.red first."
     ]
     compiled-rules: do bind load %compiled-rules.red 'handle-word
-    alternatives: compiled-rules/alternatives
 
     compile-rules*: function [result name rules] [
         more-rules: copy []
@@ -54,22 +53,6 @@ parse-compiler: context [
         ]
         ; convert the AST to a Red PARSE block
         paren: func [block] [reduce [to paren! compose/only/deep block]]
-        handle-typeset: func [type] [
-            either typeset? type [
-                reduce [
-                    collect [
-                        s: []
-                        foreach t to block! type [
-                            keep s
-                            keep t
-                            s: '|
-                        ]
-                    ]
-                ]
-            ] [
-                type
-            ]
-        ]
         put result name tree-to-block ast [
             (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
             (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
@@ -84,12 +67,12 @@ parse-compiler: context [
             (none)              -> [(_result: none)]
             (loop n child)      -> [n [child]]
             (get type)          -> [[
-                'set '_result (handle-typeset type)
+                'set '_result type
                 '|
-                'set '_result 'word! 'if either (typeset? type) [
-                    (paren [find (to block! type) type?/word set/any '_result get/any _result])
+                'set '_result 'word! 'if either (either word? type [typeset? get/any type] [typeset? type]) [
+                    (paren [find (type) type? get/any _result])
                 ] [
-                    (paren [(type) = type? set/any '_result get/any _result])
+                    (paren [(type) = type? get/any _result])
                 ]
             ]]
             (rule word)         -> [
@@ -120,9 +103,9 @@ parse-compiler: context [
             ]
             (match-type type)   -> [
                 either (.parent = 'not) [
-                    (handle-typeset type)
+                    type
                 ] [
-                    'set '_result (handle-typeset type)
+                    'set '_result type
                 ]
             ]
             (object child)      -> [[
@@ -186,7 +169,7 @@ parse-compiler: context [
             ]
             (into child)        -> [
                 if (value? 'type) [
-                    'ahead (handle-typeset type)
+                    'ahead type
                 ]
                 'into [child]
             ]
