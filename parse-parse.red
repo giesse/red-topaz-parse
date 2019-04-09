@@ -93,7 +93,18 @@ parse-parse: context [
             |
             keep get block! name: ('rule)
             |
-            keep get map! (handle-map collection) (nargs: any [collection/nargs 0]) nargs [keep/only *]
+            keep get map! (handle-map collection) [
+                if (collection/name = 'rule-function)
+                (nargs: collection/nargs) nargs [keep/only *]
+                |
+                if (collection/name = 'rule-function-argument) [
+                    if (collection/mode = 'loop) keep element
+                    |
+                    if (collection/mode = 'match-value)
+                ]
+                |
+                if (collection/name = 'match-value)
+            ]
             |
             keep/only paren! name: ('paren)
         ]

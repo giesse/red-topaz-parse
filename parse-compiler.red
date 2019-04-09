@@ -190,6 +190,7 @@ parse-compiler: context [
                         ]
                         value: get word
                         put result/_functions word value
+                        set value/context value/parsed-spec
                         compile-rules* result word value/body
                     ]
                     []
@@ -226,6 +227,7 @@ parse-compiler: context [
                     'fail
                 ]
             ]
+            ; match-value mode
             (rule-function-argument word) -> [
                 either (.parent = 'not) [
                     word
@@ -233,6 +235,8 @@ parse-compiler: context [
                     'set '_result word
                 ]
             ]
+            ; loop mode
+            (rule-function-argument n child) -> [n [child]]
         ]
     ]
 
@@ -262,9 +266,15 @@ parse-compiler: context [
             collection: take/last _stack
         ]
 
-        _reset: does [
+        _reset: has [rule-func] [
             collection: _result: none
             clear _stack
+            if value? '_functions [
+                foreach rule-func values-of _functions [
+                    set rule-func/context none
+                    clear rule-func/stack
+                ]
+            ]
         ]
     ]
 
@@ -414,7 +424,6 @@ rule: context [
         ]
         append words extract-set-words/_parse body
         result/context: construct words
-        set result/context result/parsed-spec
         result/body: bind body result/context
         result/stack: make block! 0
         result
