@@ -175,7 +175,7 @@ parse-compiler: context [
                 ]
             ]
             (into child)        -> [
-                if (value? 'type) [
+                if (type) [
                     (preserve-word type)
                     'ahead type
                 ]

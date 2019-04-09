@@ -64,7 +64,8 @@ parse-parse: context [
             |
             name: ['end | 'here]
             |
-            name: 'into type: opt get datatype|typeset keep top-level
+            ; because map! won't store NONE values, we set type to FALSE when not specified
+            name: 'into type: [get datatype|typeset | (false)] keep top-level
             |
             name: 'debug keep string!
             |
