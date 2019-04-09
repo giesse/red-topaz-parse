@@ -100,3 +100,19 @@ Red [
 [topaz-parse [1 2 3] [4 integer!]]
 [topaz-parse [1 2 3] [integer! if (false) integer!]]
 [topaz-parse [1 2 3] [integer! if (true) integer!]]
+[
+    foo: rule [a b] [a ("A matched") | b ("B matched") | ("Neither matched")]
+    topaz-parse [1 2 3] [foo word! integer!]
+]
+[topaz-parse [a b c] [foo word! integer!]]
+[topaz-parse [a b c] [foo block! paren!]]
+[
+    foo: rule [n [integer!]] [n integer!]
+    topaz-parse [1 2 3] [foo "String"]
+]
+[topaz-parse [1 2 3] [foo 3]]
+[
+    foo: rule [] [n: integer! (n * 3)]
+    topaz-parse [4] [foo]
+]
+[n]

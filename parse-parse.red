@@ -28,6 +28,24 @@ Red [
 
 parse-parse: context [
     datatype|typeset: make typeset! [datatype! typeset!]
+    nargs: 0
+    handle-map: function [node [map!]] [
+        rule-func: node/children/1
+        if word? rule-func [rule-func: get rule-func]
+        switch/default rule-func/name [
+            rule-function [
+                node/name: 'rule-function
+                node/nargs: length? rule-func/parsed-spec
+            ]
+            ; this happens when parsing the body of a rule function
+            rule-function-argument [
+                node/name: 'rule-function-argument
+                node/mode: either rule-func/type = make typeset! [integer!] ['loop] ['match-value]
+            ]
+        ] [
+            node/name: 'match-value
+        ]
+    ]
 
     alternatives: [
         object [name: ('alternatives) keep sequence any ['| keep sequence] end]
@@ -74,6 +92,8 @@ parse-parse: context [
             keep get datatype|typeset name: ('match-type)
             |
             keep get block! name: ('rule)
+            |
+            keep get map! (handle-map collection) (nargs: any [collection/nargs 0]) nargs [keep/only *]
             |
             keep/only paren! name: ('paren)
         ]

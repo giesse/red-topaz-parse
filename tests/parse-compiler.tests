@@ -8,3 +8,8 @@ Red [
 [mold select parse-compiler/compile-rules [keep 'something] 'rules]
 [mold select parse-compiler/compile-rules [] 'rules]
 [mold select parse-compiler/compile-rules [get block!] 'rules]
+[
+    foo: rule [a b] [a ("A matched") | b ("B matched") | ("Neither matched")]
+    mold foo
+]
+[mold parse-compiler/compile-rules [foo word! integer!]]

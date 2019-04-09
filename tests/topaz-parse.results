@@ -211,4 +211,44 @@
     result: 2
     type: integer!
     status: Pass
+) #(
+    test: [foo: rule [a b] [a ("A matched") | b ("B matched") | ("Neither matched")] 
+        topaz-parse [1 2 3] [foo word! integer!]
+    ]
+    result: "B matched"
+    type: string!
+    status: Pass
+) #(
+    test: [topaz-parse [a b c] [foo word! integer!]]
+    result: "A matched"
+    type: string!
+    status: Pass
+) #(
+    test: [topaz-parse [a b c] [foo block! paren!]]
+    result: "Neither matched"
+    type: string!
+    status: Pass
+) #(
+    test: [foo: rule [n [integer!]] [n integer!] topaz-parse [1 2 3] [foo "String"]]
+    result: {*** Script Error: foo does not allow string! for its n argument^/*** Where: do^/*** Stack: run-test-file topaz-parse cause-error }
+    type: error!
+    status: Pass
+) #(
+    test: [topaz-parse [1 2 3] [foo 3]]
+    result: 1
+    type: integer!
+    status: Failure
+) #(
+    test: [
+        foo: rule [] [n: integer! (n * 3)] 
+        topaz-parse [4] [foo]
+    ]
+    result: 12
+    type: integer!
+    status: Pass
+) #(
+    test: [n]
+    result: {*** Script Error: n has no value^/*** Where: try^/*** Stack: run-test-file }
+    type: error!
+    status: Pass
 )

@@ -181,6 +181,58 @@ parse-compiler: context [
                 ]
                 'into [child]
             ]
+            (rule-function word ...) -> [
+                (
+                    unless find result word [
+                        unless result/_functions [
+                            result/_functions: make map! []
+                            result/_rule-func: result/_rule-arg: result/_tmp: 0
+                        ]
+                        value: get word
+                        put result/_functions word value
+                        compile-rules* result word value/body
+                    ]
+                    []
+                )
+                (paren [_rule-func: select _functions (to lit-word! word)])
+                literal (append/only _rule-func/stack values-of _rule-func/context)
+                (paren [
+                    set _rule-func/context (children)
+                    ; problem: arg becomes global??
+                    foreach _rule-arg _rule-func/parsed-spec [
+                        _tmp: select _rule-func/context _rule-arg/word
+                        switch type?/word :_tmp [
+                            word! [put _rule-func/context _rule-arg/word get _tmp]
+                            paren! [put _rule-func/context _rule-arg/word do _tmp]
+                        ]
+                        if _rule-arg/type [
+                            unless find _rule-arg/type type? select _rule-func/context _rule-arg/word [
+                                cause-error 'script 'expect-arg [
+                                    (to lit-word! word)
+                                    type? select _rule-func/context _rule-arg/word
+                                    _rule-arg/word
+                                ]
+                            ]
+                        ]
+                    ]
+                ])
+                [
+                    word
+                    (paren [_rule-func: select _functions (to lit-word! word)])
+                    literal (set _rule-func/context take/last _rule-func/stack)
+                    '|
+                    (paren [_rule-func: select _functions (to lit-word! word)])
+                    literal (set _rule-func/context take/last _rule-func/stack)
+                    'fail
+                ]
+            ]
+            (rule-function-argument word) -> [
+                either (.parent = 'not) [
+                    word
+                ] [
+                    'set '_result word
+                ]
+            ]
         ]
     ]
 
@@ -199,41 +251,12 @@ parse-compiler: context [
         []
     ] :compile-rules*
 
-    nargs: 0
-    handle-word: function [word-node] bind [
-        nargs: 0
-        word: first word-node/children
-        value: get word
-        word-node/name: case [
-            block? :value [
-                ;append more-rules word
-                ;append/only more-rules value
-                'rule
-            ]
-            all [map? :value value/name = 'rule-function] [
-                unless find result word [
-                    unless result/_functions [
-                        result/_functions: make map! []
-                    ]
-                    put result/_functions word value
-                    append more-rules word
-                    append/only more-rules value/body
-                ]
-                nargs: length? value/parsed-spec
-                'rule-function
-            ]
-            'else [
-                'match-value
-            ]
-        ]
-    ] :compile-rules*
-
     runtime: [
         _coll: collection: _result: none
         _stack: []
 
         _push-state: does [
-            append _stack collection
+            append/only _stack collection
         ]
         _pop-state: does [
             collection: take/last _stack
@@ -248,6 +271,7 @@ parse-compiler: context [
     compile-rules: function [
         "Compile TOPAZ-PARSE rules into PARSE rules"
         rules [block! word!]
+        /with ctx [object!] "Copy words into the generated context (eg. functions called from within rule parens)"
     ] [
         parsed-rules: make map! []
         name: 'rules
@@ -258,6 +282,15 @@ parse-compiler: context [
             ]
         ]
         compile-rules* parsed-rules name rules
+        if with [
+            with: collect [
+                foreach word words-of ctx [
+                    unless find parsed-rules word [
+                        put parsed-rules keep word false
+                    ]
+                ]
+            ]
+        ]
         result: append copy runtime body-of parsed-rules
         append result compose/deep [
             _parse: func [input] [
@@ -265,7 +298,14 @@ parse-compiler: context [
                 if parse input [(name) to end] [:_result]
             ]
         ]
-        context result
+        ; the copy prevents some binding issues with shared parens
+        result: context copy/deep result
+        if with [
+            foreach word with [
+                put result word select ctx word
+            ]
+        ]
+        result
     ]
 
     decompile-ast: function [ast [map!]] [
@@ -334,7 +374,8 @@ rule: context [
                 refinement! (do make error! "Sorry, refinements not supported in parse functions")
                 |
                 keep object [
-                    name: word!
+                    word: word!
+                    name: ('rule-function-argument)
                     opt [type: block! (collection/type: make typeset! collection/type)]
                     opt string!
                 ]
@@ -347,7 +388,7 @@ rule: context [
         any [
             keep set-word!
             |
-            into extract-set-words*
+            into any-block! extract-set-words*
             |
             skip
         ]
@@ -366,18 +407,16 @@ rule: context [
         unless result/parsed-spec: func-spec/_parse spec [
             cause-error 'script 'invalid-arg [spec]
         ]
-        result/words: make block! 0
-        foreach arg result/parsed-spec [
-            append result/words to set-word! arg/name
+        words: collect [
+            foreach arg result/parsed-spec [
+                keep to set-word! arg/word
+            ]
         ]
-        append result/words extract-set-words/_parse body
-        result/context: construct result/words
-        ; make sure they are in the correct order to use SET etc. (handles duplicates in original words block)
-        result/words: words-of result/context
+        append words extract-set-words/_parse body
+        result/context: construct words
+        set result/context result/parsed-spec
         result/body: bind body result/context
-        foreach arg result/parsed-spec [
-            arg/name: bind arg/name result/context
-        ]
+        result/stack: make block! 0
         result
     ]
 ]
