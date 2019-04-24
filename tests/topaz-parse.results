@@ -251,4 +251,17 @@
     result: {*** Script Error: n has no value^/*** Where: try^/*** Stack: run-test-file }
     type: error!
     status: Pass
+) #(
+    test: [topaz-parse [a b c] [word! word! end]]
+    type: none!
+    status: Pass
+) #(
+    test: [foo: [word!] topaz-parse [a b c] [foo word!]]
+    result: b
+    type: word!
+    status: Pass
+) #(
+    test: [topaz-parse [a b c] [foo word! end]]
+    type: none!
+    status: Pass
 )

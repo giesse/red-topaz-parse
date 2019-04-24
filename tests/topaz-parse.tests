@@ -116,3 +116,9 @@ Red [
     topaz-parse [4] [foo]
 ]
 [n]
+[topaz-parse [a b c] [word! word! end]]
+[
+    foo: [word!]
+    topaz-parse [a b c] [foo word!]
+]
+[topaz-parse [a b c] [foo word! end]]

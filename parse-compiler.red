@@ -75,7 +75,7 @@ parse-compiler: context [
                     (paren [(type) = type? get/any _result])
                 ]
             ]]
-            (rule word)         -> [
+            (rule word)         -> [[
                 (
                     unless find result word [
                         compile-rules* result word get word
@@ -88,7 +88,7 @@ parse-compiler: context [
                 '|
                 literal (_pop-state)
                 'fail
-            ]
+            ]]
             (match-value value) -> [
                 ; Red parse wants [some/path] rather than ['some/path] to match a literal path
                 ; also there's a bug with lit-words, you need [ahead word! 'some-word] to work around it
