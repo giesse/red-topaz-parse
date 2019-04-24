@@ -35,7 +35,7 @@ do %parse-compiler.red
 do %parse-parse.red
 
 print "Building new compiled-rules.red..."
-compiled-rules: parse-compiler/compile-rules/with in parse-parse 'alternatives parse-parse
+compiled-rules: compile-parse-rules/with in parse-parse 'alternatives parse-parse
 write %compiled-rules.red mold/all compiled-rules
 
 print "All done!"

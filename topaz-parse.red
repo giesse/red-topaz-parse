@@ -35,6 +35,6 @@ topaz-parse: function [
     rules [block!]
     ;/trace "Output execution trace for debugging"
 ] [
-    compiled-rules: parse-compiler/compile-rules rules
+    compiled-rules: compile-parse-rules rules
     compiled-rules/_parse block
 ]

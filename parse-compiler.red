@@ -27,8 +27,9 @@ Red [
 ]
 
 do %ast-tools.red
+; do %parse-compiler-debug.red
 
-parse-compiler: context [
+compile-parse-rules: context [
     unless exists? %compiled-rules.red [
         do make error! "%compiled-rules.red missing. Please do %make.red first."
     ]
@@ -321,64 +322,9 @@ parse-compiler: context [
         ]
         result
     ]
-
-    decompile-ast: function [ast [map!]] [
-        tree-to-block ast [
-            (alternatives ...)  -> [either (empty? .stack) [... separated by |] [[... separated by |]]]
-            (sequence ...)      -> [either (.parent = 'alternatives) [...] [[...]]]
-            (object child)      -> ['object child]
-            (set word child)    -> [(to set-word! word) child]
-            (end)               -> ['end]
-            (skip)              -> ['skip]
-            (paren code)        -> [code]
-            (collect child)     -> ['collect child]
-            (keep child)        -> [(either only? [[keep/only]] ['keep]) child]
-            (opt child)         -> ['opt child]
-            (any child)         -> ['any child]
-            (some child)        -> ['some child]
-            (not child)         -> ['not child]
-            (rule word)         -> [word]
-            (match-value value) -> [value]
-            (match-type type)   -> [type]
-            (into child)        -> ['into (either value? 'type [type] [[]]) child]
-            (get type)          -> ['get type]
-        ]
-    ]
-
-    print-ast: function [ast [map!]] [
-        mold-flat: func [value] [
-            value: mold/flat/part value 30
-            if 30 = length? value [
-                change skip tail value -3 "..."
-            ]
-            value
-        ]
-        print tree-to-block/into ast [
-            (alternatives ...)  -> [.indent "[^/" ... separated by [.indent "    |^/"] .indent "]^/"]
-            (sequence ...)      -> [... without indenting]
-            (object child)      -> [.indent "Object^/" child]
-            (set word child)    -> [.indent "Set " (mold word) #"^/" child]
-            (end)               -> [.indent "End^/"]
-            (skip)              -> [.indent "Skip^/"]
-            (paren code)        -> [.indent "Do " (mold-flat code) #"^/"]
-            (collect child)     -> [.indent "Collect^/" child]
-            (keep child)        -> [.indent (either only? ["Keep (only)"] ["Keep"]) #"^/" child]
-            (opt child)         -> [.indent "Opt^/" child]
-            (any child)         -> [.indent "Any^/" child]
-            (some child)        -> [.indent "Some^/" child]
-            (not child)         -> [.indent "Not^/" child]
-            (rule word)         -> [.indent "Sub-rule " (mold word) #"^/"]
-            (match-value value) -> [.indent "Match value " (mold-flat value) #"^/"]
-            (match-type type)   -> [.indent "Match type " (mold-flat type) #"^/"]
-            (get type)          -> [.indent "Get word if it refers to " (mold type) #"^/"]
-            (into child)        -> [
-                .indent (
-                    either value? 'type [reduce ["Into " mold type]] ["Into (default)"]
-                ) #"^/" child
-            ]
-        ] copy ""
-    ]
 ]
+
+compile-parse-rules: :compile-parse-rules/compile-rules
 
 rule: context [
     func-spec: [
@@ -396,7 +342,7 @@ rule: context [
             ]
         ]
     ]
-    func-spec: parse-compiler/compile-rules 'func-spec
+    func-spec: compile-parse-rules 'func-spec
 
     extract-set-words*: [
         any [
@@ -408,7 +354,7 @@ rule: context [
         ]
     ]
     extract-set-words: [collect [extract-set-words* end]]
-    extract-set-words: parse-compiler/compile-rules 'extract-set-words
+    extract-set-words: compile-parse-rules 'extract-set-words
 
     rule: function [
         "Define a TOPAZ-PARSE rule that can take arguments and has local words"
