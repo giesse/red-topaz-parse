@@ -264,4 +264,9 @@
     test: [topaz-parse [a b c] [foo word! end]]
     type: none!
     status: Pass
+) #(
+    test: [topaz-parse [/a b /c] [collect any [keep to-word refinement! | skip]]]
+    result: [a c]
+    type: block!
+    status: Pass
 )

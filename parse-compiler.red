@@ -181,6 +181,10 @@ parse-compiler: context [
                 ]
                 'into [child]
             ]
+            (filter f child) -> [
+                [child]
+                (paren [_result: (f) :_result])
+            ]
             (rule-function word ...) -> [
                 (
                     unless find result word [

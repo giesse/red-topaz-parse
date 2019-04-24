@@ -107,6 +107,9 @@ parse-parse: context [
             ]
             |
             keep/only paren! name: ('paren)
+            |
+            ; does not really belong here, but will do for now
+            keep get any-function! name: ('filter) keep top-level
         ]
         |
         object [name: ('match-value) keep/only *]

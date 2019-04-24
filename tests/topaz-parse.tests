@@ -122,3 +122,4 @@ Red [
     topaz-parse [a b c] [foo word!]
 ]
 [topaz-parse [a b c] [foo word! end]]
+[topaz-parse [/a b /c] [collect any [keep to-word refinement! | skip]]]
