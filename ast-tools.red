@@ -248,7 +248,7 @@ map-to-object: function [map [map!] /with words [block!]] [
         append words* word
         append/only values :value
     ]
-    obj: construct append copy words words*
+    obj: construct append copy any [words []] words*
     set bind words* obj values
     obj
 ]
@@ -399,4 +399,37 @@ transform-tree: function [
     ]
     rules: parse-tree-rules rules [paren! | word!]
     transform-node node rules
+]
+foreach-node*: function [node rules] [
+    node-rules: select rules node/name
+    if node-rules [
+        foreach rule node-rules [
+            if mapped: map-node node rule/pattern [
+                mapped: map-to-object mapped
+                do bind/copy rule/production mapped
+            ]
+        ]
+    ]
+    if block? node/children [
+        foreach child node/children [
+            if node? :child [foreach-node* child rules]
+        ]
+    ]
+    foreach word words-of node [
+        unless find [name children] word [
+            if node? child: select node word [foreach-node* child rules]
+        ]
+    ]
+]
+
+foreach-node: function [
+    "Evaluates a block for each matching node in a tree"
+    node [map! object!]
+    rules [block!]
+] [
+    unless word? :node/name [
+        cause-error 'script 'invalid-arg [node]
+    ]
+    rules: parse-tree-rules rules block!
+    foreach-node* node rules
 ]
