@@ -127,3 +127,17 @@ Red [
 [topaz-parse [a b c] [word! pos: here word! word!]]
 [pos]
 [topaz-parse [a b c] [word! copy 2 word!]]
+
+; string parsing
+
+[topaz-parse "abc" ["a"]]
+[topaz-parse "abc" ["ab"]]
+[topaz-parse "abc" [copy "ab"]]
+[
+    text-chars: complement charset "<"
+    tag-name-chars: complement charset "/ >"
+    html: [object ["<html>" name: ('html) any [keep tag | keep text] "</html>"]]
+    tag: [object ["<" name: copy some tag-name-chars ">" any [keep tag | keep text] "</" some tag-name-chars ">"]]
+    text: [copy some text-chars]
+    topaz-parse "<html><head><title>My page</title></head><body><p>Paragraph</p></body></html>" html
+]

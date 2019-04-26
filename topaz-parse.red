@@ -31,7 +31,7 @@ do %parse-compiler.red
 
 topaz-parse: function [
     "Parse BLOCK according to RULES; return last result from RULES if it matches, NONE otherwise"
-    block [any-block!]
+    block [binary! any-block! any-string!]
     rules [block!]
     ;/trace "Output execution trace for debugging"
 ] [

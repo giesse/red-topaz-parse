@@ -289,4 +289,45 @@
     result: [b c]
     type: block!
     status: Pass
+) #(
+    test: [topaz-parse "abc" ["a"]]
+    result: #"a"
+    type: char!
+    status: Pass
+) #(
+    test: [topaz-parse "abc" ["ab"]]
+    result: #"a"
+    type: char!
+    status: Pass
+) #(
+    test: [topaz-parse "abc" [copy "ab"]]
+    result: "ab"
+    type: string!
+    status: Pass
+) #(
+    test: [
+        text-chars: complement charset "<" 
+        tag-name-chars: complement charset "/ >" 
+        html: [object ["<html>" name: ('html) any [keep tag | keep text] "</html>"]] tag: [object ["<" name: copy some tag-name-chars ">" any [keep tag | keep text] "</" some tag-name-chars ">"]] 
+        text: [copy some text-chars] topaz-parse {<html><head><title>My page</title></head><body><p>Paragraph</p></body></html>} html
+    ]
+    result: #(
+        name: html
+        children: [#(
+            name: "head"
+            children: [#(
+                name: "title"
+                children: ["My page"]
+            )]
+        ) #(
+            name: "body"
+            children: [#(
+                name: "p"
+                children: ["Paragraph"]
+            )]
+        )]
+    )
+    type: map!
+    status: Pass
+    note: "Test changed"
 )
