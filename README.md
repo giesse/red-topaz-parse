@@ -14,9 +14,27 @@ $ red make.red
 
 ## Major differences compared to `parse`
 
-* First of all, this version is incomplete and missing lots of stuff like `break`, `to` and `thru`, and so on. Also only block parsing is currently supported. That's hopefully temporary.
+* First of all, this version is incomplete; here's a list of keywords missing compared to Red's `parse`:
 
-* Rules return a value in addition to matching the input. This can be used with `keep`, `set-word!` values, `if` and `either`, and so on. It also makes `set` unnecessary. Examples:
+  * `ahead` (no plans to add it)
+
+  * `none` (not entirely sure yet if needed)
+
+  * `to` and `thru` (I hope to be able to avoid them altogether)
+
+  * `break`
+
+  * `fail`
+
+  * `then` (should be removed from Red's `parse` too)
+
+  * `reject`
+
+  * `while` (not sure if needed)
+
+  * `insert` and `remove` (I'd like to stay away from modifying the parsed series)
+
+* Rules return a value in addition to matching the input. This can be used with `keep`, `set-word!` values, and so on. It also makes `set` unnecessary. Examples:
 
 ```
 >> topaz-parse [1 2 3] [integer!]
@@ -54,6 +72,8 @@ $ red make.red
 * `*` is an alias for `skip`
 
 * The parsing succeeds if the rules match, even if they don't consume all the input. To achieve the same behavior as `parse`, just add `end` to your rules appropriately.
+
+* `into` can take an optional type to restrict recursion into only series of that type; eg. `into block! [...]` will only match! blocks, and not parens or strings etc.
 
 * In addition to `collect`, there is a `object` keyword which will collect `set-word!` rules and create a `map!` (closer match to `object!` in Topaz) instead of setting the words directly
 
