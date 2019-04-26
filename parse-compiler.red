@@ -64,7 +64,6 @@ compile-parse-rules: context [
                 unless find result word [
                     unless result/_functions [
                         result/_functions: make map! []
-                        result/_rule-func: result/_rule-arg: result/_tmp: 0
                     ]
                     value: get word
                     put result/_functions word value
@@ -91,29 +90,6 @@ compile-parse-rules: context [
         []
     ] :compile-rules*
 
-    runtime: [
-        _coll: collection: _result: none
-        _stack: []
-
-        _push-state: does [
-            append/only _stack collection
-        ]
-        _pop-state: does [
-            collection: take/last _stack
-        ]
-
-        _reset: has [rule-func] [
-            collection: _result: none
-            clear _stack
-            if value? '_functions [
-                foreach rule-func values-of _functions [
-                    set rule-func/context none
-                    clear rule-func/stack
-                ]
-            ]
-        ]
-    ]
-
     compile-rules: function [
         "Compile TOPAZ-PARSE rules into PARSE rules"
         rules [block! word!]
@@ -137,15 +113,7 @@ compile-parse-rules: context [
                 ]
             ]
         ]
-        result: append copy runtime body-of parsed-rules
-        append result compose/deep [
-            _parse: func [input] [
-                _reset
-                if parse input [(name) to end] [:_result]
-            ]
-        ]
-        ; the copy prevents some binding issues with shared parens
-        result: context copy/deep result
+        result: parse-target/compile parsed-rules name
         if with [
             foreach word with [
                 put result word select ctx word

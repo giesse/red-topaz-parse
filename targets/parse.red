@@ -43,6 +43,7 @@ context [
         (literal value)     -> ['set '_result 'quote value]
         (none)              -> [(_result: none)]
         (loop n child)      -> [n [child]]
+        (set word child)    -> [[child] (paren [_set (to lit-word! word)])]
         (get type)          -> [[
             'set '_result type
             '|
@@ -100,16 +101,6 @@ context [
             literal (_pop-state)
             'fail
         ]]
-        (set word child)    -> [
-            [child]
-            (paren [
-                either map? collection [
-                    put collection (to lit-word! word) :_result
-                ] [
-                    set (to lit-word! word) :_result
-                ]
-            ])
-        ]
         (collect child)     -> [[
             literal (
                 _push-state
@@ -126,23 +117,10 @@ context [
         ]]
         (keep child)        -> [
             [child]
-            literal (
-                _coll: either map? collection [
-                    unless find collection 'children [
-                        collection/children: make block! 0
-                    ]
-                    collection/children
-                ] [
-                    collection
-                ]
-                unless block? :_coll [
-                    cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]
-                ]
-            )
             either only? [
-                literal (append/only _coll :_result)
+                literal (_keep-only)
             ] [
-                literal (append _coll :_result)
+                literal (_keep)
             ]
         ]
         (into child)        -> [
@@ -154,35 +132,12 @@ context [
             (paren [_result: (f) :_result])
         ]
         (rule-function word ...) -> [
-            (paren [_rule-func: select _functions (to lit-word! word)])
-            literal (append/only _rule-func/stack values-of _rule-func/context)
-            (paren [
-                set _rule-func/context (children)
-                ; problem: arg becomes global??
-                foreach _rule-arg _rule-func/parsed-spec [
-                    _tmp: select _rule-func/context _rule-arg/word
-                    switch type?/word :_tmp [
-                        word! [put _rule-func/context _rule-arg/word get _tmp]
-                        paren! [put _rule-func/context _rule-arg/word do _tmp]
-                    ]
-                    if _rule-arg/type [
-                        unless find _rule-arg/type type? select _rule-func/context _rule-arg/word [
-                            cause-error 'script 'expect-arg [
-                                (to lit-word! word)
-                                type? select _rule-func/context _rule-arg/word
-                                _rule-arg/word
-                            ]
-                        ]
-                    ]
-                ]
-            ])
+            (paren [_apply (to lit-word! word) (children)])
             [
                 word
-                (paren [_rule-func: select _functions (to lit-word! word)])
-                literal (set _rule-func/context take/last _rule-func/stack)
+                (paren [_return (to lit-word! word)])
                 '|
-                (paren [_rule-func: select _functions (to lit-word! word)])
-                literal (set _rule-func/context take/last _rule-func/stack)
+                (paren [_return (to lit-word! word)])
                 'fail
             ]
         ]
@@ -196,5 +151,90 @@ context [
         ]
         ; loop mode
         (rule-function-argument n child) -> [n [child]]
+    ]
+
+    runtime: [
+        collection: _result: none
+        _stack: []
+
+        _push-state: does [
+            append/only _stack collection
+        ]
+        _pop-state: does [
+            collection: take/last _stack
+        ]
+        _set: function [word] [
+            either map? collection [
+                put collection word :_result
+            ] [
+                set word :_result
+            ]
+        ]
+        _get-collection: function [] [
+            coll: either map? collection [
+                unless find collection 'children [
+                    collection/children: make block! 0
+                ]
+                collection/children
+            ] [
+                collection
+            ]
+            unless block? :coll [
+                cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]
+            ]
+            coll
+        ]
+        _keep: does [append _get-collection :_result]
+        _keep-only: does [append/only _get-collection :_result]
+        _apply: function [word args] [
+            rule-func: select _functions word
+            append/only rule-func/stack values-of rule-func/context
+            set rule-func/context args
+            foreach rule-arg rule-func/parsed-spec [
+                value: select rule-func/context rule-arg/word
+                switch type?/word :value [
+                    word! [put rule-func/context rule-arg/word value: get value]
+                    paren! [put rule-func/context rule-arg/word value: do value]
+                ]
+                if rule-arg/type [
+                    unless find rule-arg/type type? :value [
+                        cause-error 'script 'expect-arg [
+                            word
+                            type? :value
+                            rule-arg/word
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        _return: function [word] [
+            rule-func: select _functions word
+            set rule-func/context take/last rule-func/stack
+        ]
+
+        _reset: has [rule-func] [
+            collection: _result: none
+            clear _stack
+            if value? '_functions [
+                foreach rule-func values-of _functions [
+                    set rule-func/context none
+                    clear rule-func/stack
+                ]
+            ]
+        ]
+    ]
+
+    compile: function [parsed-rules name] [
+        result: clear []
+        append result runtime
+        append result body-of parsed-rules
+        append result compose/deep [
+            _parse: func [input] [
+                _reset
+                if parse input [(name) to end] [:_result]
+            ]
+        ]
+        ; the copy prevents some binding issues with shared parens
+        context copy/deep result
     ]
 ]
