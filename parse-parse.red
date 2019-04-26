@@ -61,8 +61,6 @@ parse-parse: context [
             |
             name: 'if keep/only paren!
             |
-            name: 'either keep element keep into block! alternatives keep into block! alternatives
-            |
             keep set-word! name: ('set) keep top-level
         ]
         |
@@ -85,8 +83,8 @@ parse-parse: context [
             ; because map! won't store NONE values, we set type to FALSE when not specified
             name: 'into type: [get datatype|typeset | (false)] keep top-level
             |
-            name: 'debug keep string!
-            |
+            ;name: 'debug keep string!
+            ;|
             name: 'get keep get datatype|typeset
             |
             keep get datatype|typeset name: ('match-type)

@@ -269,4 +269,24 @@
     result: [a c]
     type: block!
     status: Pass
+) #(
+    test: [topaz-parse [a b c] [word! here]]
+    result: [b c]
+    type: block!
+    status: Pass
+) #(
+    test: [topaz-parse [a b c] [word! pos: here word! word!]]
+    result: c
+    type: word!
+    status: Pass
+) #(
+    test: [pos]
+    result: [b c]
+    type: block!
+    status: Pass
+) #(
+    test: [topaz-parse [a b c] [word! copy 2 word!]]
+    result: [b c]
+    type: block!
+    status: Pass
 )

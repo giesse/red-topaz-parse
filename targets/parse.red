@@ -44,6 +44,8 @@ context [
         (none)              -> [(_result: none)]
         (loop n child)      -> [n [child]]
         (set word child)    -> [[child] (paren [_set (to lit-word! word)])]
+        (copy child)        -> ['copy '_result [child]]
+        (here)              -> [_result:]
         (get type)          -> [[
             'set '_result type
             '|

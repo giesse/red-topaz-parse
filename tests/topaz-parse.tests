@@ -123,3 +123,7 @@ Red [
 ]
 [topaz-parse [a b c] [foo word! end]]
 [topaz-parse [/a b /c] [collect any [keep to-word refinement! | skip]]]
+[topaz-parse [a b c] [word! here]]
+[topaz-parse [a b c] [word! pos: here word! word!]]
+[pos]
+[topaz-parse [a b c] [word! copy 2 word!]]
