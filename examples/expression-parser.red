@@ -4,7 +4,7 @@ Red [
     Author:  "Gabriele Santilli"
     Version: 1.0.0
     License: {
-        Copyright 2018 Gabriele Santilli
+        Copyright 2019 Gabriele Santilli
 
         Permission is hereby granted, free of charge, to any person obtaining
         a copy of this software and associated documentation files
@@ -49,41 +49,29 @@ factorial: function [n [integer!]] [
 ]
 
 expression: [
-    object [
-        left: term
-        ['+ op: ('add) | '- op: ('subtract)]
-        right: expression
-    ]
-    | term
+    object [left: term op: ['+ | '-] right: expression]
+    |
+    term
 ]
 term: [
-    object [
-        left: pow
-        ['* op: ('multiply) | '/ op: ('divide)]
-        right: term
-    ]
-    | pow
+    object [left: pow op: ['* | '/] right: term]
+    |
+    pow
 ]
 pow: [
-    object [
-        left: unary
-        '** op: ('power)
-        right: unary
-    ]
-    | unary
+    object [left: unary op: '** right: unary]
+    |
+    unary
 ]
 unary: [
-    object [
-        '- op: ('negate) argument: fact
-    ]
-    | fact
+    object [op: '- argument: fact]
+    |
+    fact
 ]
 fact: [
-    object [
-        argument: primary
-        '! op: ('factorial)
-    ]
-    | primary
+    object [argument: primary op: '!]
+    |
+    primary
 ]
 primary: [
     into paren! expression | number! | word!
@@ -102,10 +90,20 @@ tree-to-code: function [tree [map! number! word!]] [
 ]
 emit-node: function [output node [map! number! word!]] [
     either map? node [
-        append output node/op
         either node/argument [
+            append output select [
+                - negate
+                ! factorial
+            ] node/op
             emit-node output node/argument
         ] [
+            append output select [
+                + add
+                - subtract
+                * multiply
+                / divide
+                ** power
+            ] node/op
             emit-node output node/left
             emit-node output node/right
         ]
