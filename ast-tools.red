@@ -51,7 +51,7 @@ paren-to-tree: function [
     unless parse node node-rule [
         cause-error 'script 'invalid-arg [node]
     ]
-    if empty? result/children [result/children: none]
+    if empty? result/children [remove/key result 'children]
     result
 ]
 
@@ -240,16 +240,16 @@ emit-production: function [output rules node production] [
     ]
 ]
 
-map-to-object: function [map [map!] /with words [block!]] [
+map-to-object: function [map [map!]] [
     body: body-of map
-    words*: clear []
+    words: clear []
     values: clear []
     foreach [word value] body [
-        append words* word
+        append words word
         append/only values :value
     ]
-    obj: construct append copy any [words []] words*
-    set bind words* obj values
+    obj: construct words
+    set obj values
     obj
 ]
 
@@ -261,7 +261,7 @@ tree-to-block*: function [output stack indent node rules] [
                 mapped/.stack: stack
                 mapped/.indent: indent
                 mapped/.parent: last stack
-                mapped: map-to-object/with mapped [.parent:]
+                mapped: map-to-object mapped
                 production: bind/copy rule/production mapped
                 emit-production output rules mapped production
                 break
@@ -400,6 +400,7 @@ transform-tree: function [
     rules: parse-tree-rules rules [paren! | word!]
     transform-node node rules
 ]
+
 foreach-node*: function [node rules] [
     node-rules: select rules node/name
     if node-rules [

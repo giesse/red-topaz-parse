@@ -15,10 +15,12 @@
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [integer! integer! integer! integer!]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [word!]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -100,6 +102,7 @@
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [literal literal]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -114,6 +117,7 @@
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [any []]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -135,6 +139,7 @@
     test: [word: 'word 
         topaz-parse [a b c] [word]
     ]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -154,10 +159,12 @@
     status: Pass
 ) #(
     test: [topaz-parse [a [b c] d] [word! into paren! [word! word!]]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
     test: [topaz-parse [a [b c] d] [word! into paren! [word! word!] word!]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -177,6 +184,7 @@
     status: Pass
 ) #(
     test: [word: [a block] topaz-parse [word] [block!]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -186,6 +194,7 @@
     status: Pass
 ) #(
     test: [topaz-parse [word] [get integer!]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -200,10 +209,12 @@
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [4 integer!]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
     test: [topaz-parse [1 2 3] [integer! if (false) integer!]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -253,6 +264,7 @@
     status: Pass
 ) #(
     test: [topaz-parse [a b c] [word! word! end]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -262,6 +274,7 @@
     status: Pass
 ) #(
     test: [topaz-parse [a b c] [foo word! end]]
+    result: #[none]
     type: none!
     status: Pass
 ) #(
@@ -329,5 +342,4 @@
     )
     type: map!
     status: Pass
-    note: "Test changed"
 )
