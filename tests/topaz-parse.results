@@ -342,4 +342,19 @@
     )
     type: map!
     status: Pass
+) #(
+    test: [topaz-parse [a b c d] [to 'c here]]
+    result: [c d]
+    type: block!
+    status: Pass
+) #(
+    test: [topaz-parse [a b c d] [thru 'c here]]
+    result: [d]
+    type: block!
+    status: Pass
+) #(
+    test: [topaz-parse [a b c d] [also 'a 'b]]
+    result: a
+    type: word!
+    status: Pass
 )

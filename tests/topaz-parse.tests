@@ -141,3 +141,7 @@ Red [
     text: [copy some text-chars]
     topaz-parse "<html><head><title>My page</title></head><body><p>Paragraph</p></body></html>" html
 ]
+
+[topaz-parse [a b c d] [to 'c here]]
+[topaz-parse [a b c d] [thru 'c here]]
+[topaz-parse [a b c d] [also 'a 'b]]

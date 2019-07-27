@@ -62,6 +62,8 @@ parse-parse: context [
             name: 'if keep/only paren!
             |
             keep set-word! name: ('set) keep top-level
+            |
+            name: 'also keep top-level keep top-level
         ]
         |
         element
@@ -70,7 +72,7 @@ parse-parse: context [
         into block! alternatives
         |
         object [
-            name: ['opt | 'any | 'some | 'not] keep element
+            name: ['opt | 'any | 'some | 'not | 'to | 'thru] keep element
             |
             keep get integer! name: ('loop) keep element
             |

@@ -40,12 +40,15 @@ context [
         (any child)         -> ['any [[child] '| literal (_result: none) 'fail]]
         (some child)        -> ['some [child]]
         (not child)         -> ['not [child]]
+        (to child)          -> ['to [child]]
+        (thru child)        -> ['thru [child]]
         (literal value)     -> ['set '_result 'quote value]
         (none)              -> [(_result: none)]
         (loop n child)      -> [n [child]]
         (set word child)    -> [[child] (paren [_set (to lit-word! word)])]
         (copy child)        -> ['copy '_result [child]]
         (here)              -> [_result:]
+        (also keep ignore)  -> [keep (paren [_push :_result]) ignore (paren [_result: _pop])]
         (get type)          -> [[
             'set '_result type
             '|
@@ -159,12 +162,10 @@ context [
         collection: _result: none
         _stack: []
 
-        _push-state: does [
-            append/only _stack collection
-        ]
-        _pop-state: does [
-            collection: take/last _stack
-        ]
+        _push: func [value] [append/only _stack :value]
+        _pop: does [take/last _stack]
+        _push-state: does [_push collection]
+        _pop-state: does [collection: _pop]
         _set: function [word] [
             either map? collection [
                 put collection word :_result
