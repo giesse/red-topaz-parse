@@ -20,8 +20,6 @@ $ red make.red
 
   * `none` (not entirely sure yet if needed)
 
-  * `to` and `thru` (I hope to be able to avoid them altogether)
-
   * `break`
 
   * `fail`
@@ -88,6 +86,17 @@ $ red make.red
 *** Script Error: a has no value
 *** Where: catch
 *** Stack:  
+```
+
+* The `also` keyword works similarly to the Red `also` function:
+
+```
+>> topaz-parse [a b] ['a 'b]
+== b
+>> topaz-parse [a b] [also 'a 'b]
+== a
+>> topaz-parse [a c] [also 'a 'b]
+== none
 ```
 
 ## Example

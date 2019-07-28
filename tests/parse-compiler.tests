@@ -13,3 +13,4 @@ Red [
     mold foo
 ]
 [mold compile-parse-rules [foo word! integer!]]
+[mold compile-parse-rules [absolute negate integer!]]

@@ -262,7 +262,8 @@ tree-to-block*: function [output stack indent node rules] [
                 mapped/.indent: indent
                 mapped/.parent: last stack
                 mapped: map-to-object mapped
-                production: bind/copy rule/production mapped
+                ; apparently there's a bug with BIND/COPY
+                production: bind copy/deep rule/production mapped
                 emit-production output rules mapped production
                 break
             ]
