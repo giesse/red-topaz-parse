@@ -1,48 +1,58 @@
-#(
-    test: [mold select compile-parse-rules [integer!] 'rules]
-    result: "[set _result integer!]"
-    type: string!
-    status: Pass
-) #(
-    test: [mold select compile-parse-rules [collect some [keep integer!]] 'rules]
-    result: {[[(^/    _push-state ^/    collection: make block! 0^/) [some [[set _result integer!] (_keep)]] (^/    _result: collection ^/    _pop-state^/) | (_pop-state) fail]]}
-    type: string!
-    status: Pass
-) #(
-    test: [mold select compile-parse-rules [word! into [some word!] word!] 'rules]
-    result: {[[set _result word! into [some [set _result word!]] set _result word!]]}
-    type: string!
-    status: Pass
-) #(
-    test: [mold select compile-parse-rules [keep 'something] 'rules]
-    result: "[[set _result [ahead word! 'something]] (_keep)]"
-    type: string!
-    status: Pass
-) #(
-    test: [mold select compile-parse-rules [] 'rules]
-    result: "[none]"
-    type: string!
-    status: Pass
-) #(
-    test: [mold select compile-parse-rules [get block!] 'rules]
-    result: {[[set _result block! | set _result word! if (block! = type? get/any _result)]]}
-    type: string!
-    status: Pass
-) #(
-    test: [foo: rule [a b] [a ("A matched") | b ("B matched") | ("Neither matched")] 
-        mold foo
-    ]
-    result: {#(^/    name: rule-function^/    spec: [a b]^/    parsed-spec: [#(^/        word: a^/        name: rule-function-argument^/    ) #(^/        word: b^/        name: rule-function-argument^/    )]^/    context: make object! [^/        a: none^/        b: none^/    ]^/    body: [a ("A matched") | b ("B matched") | ("Neither matched")]^/    stack: []^/)}
-    type: string!
-    status: Pass
-) #(
-    test: [mold compile-parse-rules [foo word! integer!]]
-    result: {make object! [^/    collection: none^/    _result: none^/    _stack: []^/    _push: func [value][append/only _stack :value]^/    _pop: func [][take/last _stack]^/    _push-state: func [][_push collection]^/    _pop-state: func [][collection: _pop]^/    _set: func [word][either map? collection [^/        put collection word :_result^/    ] [^/        set word :_result^/    ]]^/    _get-collection: func [/local coll][^/        coll: either map? collection [^/            unless find collection 'children [^/                collection/children: make block! 0^/            ] ^/            collection/children^/        ] [^/            collection^/        ] ^/        unless block? :coll [^/            cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/        ] ^/        coll^/    ]^/    _keep: func [][append _get-collection :_result]^/    _keep-only: func [][append/only _get-collection :_result]^/    _apply: func [word args /local rule-func rule-arg value][rule-func: select _functions word ^/        append/only rule-func/stack values-of rule-func/context ^/        set rule-func/context args ^/        foreach rule-arg rule-func/parsed-spec [^/            value: select rule-func/context rule-arg/word ^/            switch type?/word :value [^/                word! [put rule-func/context rule-arg/word value: get value] paren! [put rule-func/context rule-arg/word value: do value]^/            ] if rule-arg/type [^/                unless find rule-arg/type type? :value [^/                    cause-error 'script 'expect-arg [^/                        word ^/                        type? :value ^/                        rule-arg/word^/                    ]^/                ]^/            ]^/        ]^/    ]^/    _return: func [word /local rule-func][rule-func: select _functions word ^/        set rule-func/context take/last rule-func/stack^/    ]^/    _reset: func [/local rule-func][collection: _result: none ^/        clear _stack ^/        if value? '_functions [^/            foreach rule-func values-of _functions [^/                set rule-func/context none ^/                clear rule-func/stack^/            ]^/        ]^/    ]^/    rules: [(_apply 'foo [word! integer!]) [foo (_return 'foo) | (_return 'foo) fail]]^/    _functions: #(^/        foo: #(^/            name: rule-function^/            spec: [a b]^/            parsed-spec: [#(^/                word: a^/                name: rule-function-argument^/            ) #(^/                word: b^/                name: rule-function-argument^/            )]^/            context: make object! [^/                a: #(^/                    word: a^/                    name: rule-function-argument^/                )^/                b: #(^/                    word: b^/                    name: rule-function-argument^/                )^/            ]^/            body: [a ("A matched") | b ("B matched") | ("Neither matched")]^/            stack: []^/        )^/    )^/    foo: [set _result a (_result: ("A matched")) | set _result b (_result: ("B matched")) | (_result: ("Neither matched"))]^/    _parse: func [input][_reset ^/        if parse input [rules to end] [:_result]^/    ]^/]}
-    type: string!
-    status: Pass
-) #(
-    test: [mold compile-parse-rules [absolute negate integer!]]
-    result: {make object! [^/    collection: none^/    _result: none^/    _stack: []^/    _push: func [value][append/only _stack :value]^/    _pop: func [][take/last _stack]^/    _push-state: func [][_push collection]^/    _pop-state: func [][collection: _pop]^/    _set: func [word][either map? collection [^/        put collection word :_result^/    ] [^/        set word :_result^/    ]]^/    _get-collection: func [/local coll][^/        coll: either map? collection [^/            unless find collection 'children [^/                collection/children: make block! 0^/            ] ^/            collection/children^/        ] [^/            collection^/        ] ^/        unless block? :coll [^/            cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/        ] ^/        coll^/    ]^/    _keep: func [][append _get-collection :_result]^/    _keep-only: func [][append/only _get-collection :_result]^/    _apply: func [word args /local rule-func rule-arg value][rule-func: select _functions word ^/        append/only rule-func/stack values-of rule-func/context ^/        set rule-func/context args ^/        foreach rule-arg rule-func/parsed-spec [^/            value: select rule-func/context rule-arg/word ^/            switch type?/word :value [^/                word! [put rule-func/context rule-arg/word value: get value] paren! [put rule-func/context rule-arg/word value: do value]^/            ] if rule-arg/type [^/                unless find rule-arg/type type? :value [^/                    cause-error 'script 'expect-arg [^/                        word ^/                        type? :value ^/                        rule-arg/word^/                    ]^/                ]^/            ]^/        ]^/    ]^/    _return: func [word /local rule-func][rule-func: select _functions word ^/        set rule-func/context take/last rule-func/stack^/    ]^/    _reset: func [/local rule-func][collection: _result: none ^/        clear _stack ^/        if value? '_functions [^/            foreach rule-func values-of _functions [^/                set rule-func/context none ^/                clear rule-func/stack^/            ]^/        ]^/    ]^/    rules: [[[set _result integer!] (_result: negate :_result)] (_result: absolute :_result)]^/    _parse: func [input][_reset ^/        if parse input [rules to end] [:_result]^/    ]^/]}
-    type: string!
-    status: Pass
-)
+
+    #(
+        test: [mold select compile-parse-rules [integer!] 'rules]
+        result: "[set _result integer!]"
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [mold select compile-parse-rules [collect some [keep integer!]] 'rules]
+        result: {[[(^/    _push-state ^/    collection: make block! 0^/) [some [[set _result integer!] (_keep)]] (^/    _result: collection ^/    _pop-state^/) | (_pop-state) fail]]}
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [mold select compile-parse-rules [word! into [some word!] word!] 'rules]
+        result: {[[set _result word! into [some [set _result word!]] set _result word!]]}
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [mold select compile-parse-rules [keep 'something] 'rules]
+        result: "[[set _result [ahead word! 'something]] (_keep)]"
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [mold select compile-parse-rules [] 'rules]
+        result: "[none]"
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [mold select compile-parse-rules [get block!] 'rules]
+        result: {[[set _result block! | set _result word! if (block! = type? get/any _result)]]}
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [
+            foo: rule [a b] [a ("A matched") | b ("B matched") | ("Neither matched")] 
+            mold foo
+        ]
+        result: {#(^/    name: rule-function^/    spec: [a b]^/    parsed-spec: [#(^/        word: a^/        name: rule-function-argument^/    ) #(^/        word: b^/        name: rule-function-argument^/    )]^/    context: make object! [^/        a: none^/        b: none^/    ]^/    body: [a ("A matched") | b ("B matched") | ("Neither matched")]^/    stack: []^/)}
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [mold compile-parse-rules [foo word! integer!]]
+        result: {make object! [^/    collection: none^/    _result: none^/    _stack: []^/    _push: func [value][append/only _stack :value]^/    _pop: func [][take/last _stack]^/    _push-state: func [][_push collection]^/    _pop-state: func [][collection: _pop]^/    _set: func [word][^/        either map? collection [^/            put collection word :_result^/        ] [^/            set word :_result^/        ]^/    ]^/    _get-collection: func [/local coll][^/        coll: either map? collection [^/            unless find collection 'children [^/                collection/children: make block! 0^/            ] ^/            collection/children^/        ] [^/            collection^/        ] ^/        unless block? :coll [^/            cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/        ] ^/        coll^/    ]^/    _keep: func [][append _get-collection :_result]^/    _keep-only: func [][append/only _get-collection :_result]^/    _apply: func [word args /local rule-func rule-arg value][^/        rule-func: select _functions word ^/        append/only rule-func/stack values-of rule-func/context ^/        set rule-func/context args ^/        foreach rule-arg rule-func/parsed-spec [^/            value: select rule-func/context rule-arg/word ^/            switch type?/word :value [^/                word! [put rule-func/context rule-arg/word value: get value] ^/                paren! [put rule-func/context rule-arg/word value: do value]^/            ] ^/            if rule-arg/type [^/                unless find rule-arg/type type? :value [^/                    cause-error 'script 'expect-arg [^/                        word ^/                        type? :value ^/                        rule-arg/word^/                    ]^/                ]^/            ]^/        ]^/    ]^/    _return: func [word /local rule-func][^/        rule-func: select _functions word ^/        set rule-func/context take/last rule-func/stack^/    ]^/    _reset: func [/local rule-func][^/        collection: _result: none ^/        clear _stack ^/        if value? '_functions [^/            foreach rule-func values-of _functions [^/                set rule-func/context none ^/                clear rule-func/stack^/            ]^/        ]^/    ]^/    rules: [(_apply 'foo [word! integer!]) [foo (_return 'foo) | (_return 'foo) fail]]^/    _functions: #(^/        foo: #(^/            name: rule-function^/            spec: [a b]^/            parsed-spec: [#(^/                word: a^/                name: rule-function-argument^/            ) #(^/                word: b^/                name: rule-function-argument^/            )]^/            context: make object! [^/                a: #(^/                    word: a^/                    name: rule-function-argument^/                )^/                b: #(^/                    word: b^/                    name: rule-function-argument^/                )^/            ]^/            body: [a ("A matched") | b ("B matched") | ("Neither matched")]^/            stack: []^/        )^/    )^/    foo: [set _result a (_result: ("A matched")) | set _result b (_result: ("B matched")) | (_result: ("Neither matched"))]^/    _parse: func [input][^/        _reset ^/        if parse input [rules to end] [:_result]^/    ]^/]}
+        type: string!
+        status: Unknown
+    ) 
+    #(
+        test: [mold compile-parse-rules [absolute negate integer!]]
+        result: {make object! [^/    collection: none^/    _result: none^/    _stack: []^/    _push: func [value][append/only _stack :value]^/    _pop: func [][take/last _stack]^/    _push-state: func [][_push collection]^/    _pop-state: func [][collection: _pop]^/    _set: func [word][^/        either map? collection [^/            put collection word :_result^/        ] [^/            set word :_result^/        ]^/    ]^/    _get-collection: func [/local coll][^/        coll: either map? collection [^/            unless find collection 'children [^/                collection/children: make block! 0^/            ] ^/            collection/children^/        ] [^/            collection^/        ] ^/        unless block? :coll [^/            cause-error 'script 'parse-rule ["KEEP outside of COLLECT or OBJECT"]^/        ] ^/        coll^/    ]^/    _keep: func [][append _get-collection :_result]^/    _keep-only: func [][append/only _get-collection :_result]^/    _apply: func [word args /local rule-func rule-arg value][^/        rule-func: select _functions word ^/        append/only rule-func/stack values-of rule-func/context ^/        set rule-func/context args ^/        foreach rule-arg rule-func/parsed-spec [^/            value: select rule-func/context rule-arg/word ^/            switch type?/word :value [^/                word! [put rule-func/context rule-arg/word value: get value] ^/                paren! [put rule-func/context rule-arg/word value: do value]^/            ] ^/            if rule-arg/type [^/                unless find rule-arg/type type? :value [^/                    cause-error 'script 'expect-arg [^/                        word ^/                        type? :value ^/                        rule-arg/word^/                    ]^/                ]^/            ]^/        ]^/    ]^/    _return: func [word /local rule-func][^/        rule-func: select _functions word ^/        set rule-func/context take/last rule-func/stack^/    ]^/    _reset: func [/local rule-func][^/        collection: _result: none ^/        clear _stack ^/        if value? '_functions [^/            foreach rule-func values-of _functions [^/                set rule-func/context none ^/                clear rule-func/stack^/            ]^/        ]^/    ]^/    rules: [[[set _result integer!] (_result: negate :_result)] (_result: absolute :_result)]^/    _parse: func [input][^/        _reset ^/        if parse input [rules to end] [:_result]^/    ]^/]}
+        type: string!
+        status: Unknown
+    )

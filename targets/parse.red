@@ -68,11 +68,10 @@ context [
             'fail
         ]]
         (match-value value) -> [
-            ; Red parse wants [some/path] rather than ['some/path] to match a literal path
-            ; also there's a bug with lit-words, you need [ahead word! 'some-word] to work around it
+            ; Red has bugs with lit-path and lit-word
             (
                 rl: switch/default type?/word :value [
-                    lit-path! [reduce [to path! value]]
+                    lit-path! [compose/deep [[ahead path! (value)]]]
                     lit-word! [compose/deep [[ahead word! (value)]]]
                 ] [
                     reduce [:value]

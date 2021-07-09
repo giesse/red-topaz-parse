@@ -1,360 +1,455 @@
-#(
-    test: [topaz-parse [1 2 3] [integer!]]
-    result: 1
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [integer! integer!]]
-    result: 2
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [integer! integer! integer!]]
-    result: 3
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [integer! integer! integer! integer!]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [word!]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [some integer!]]
-    result: 3
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [any integer!]]
-    result: 3
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [collect some [keep integer!]]]
-    result: [1 2 3]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse [
-        prin: function [text] [] [apply sys/print [text] text] print: function [text] [] [apply sys/print [text + "^/"] 
-            text
-        ] 
-        _foreach: function [arr fnc] [] [apply arr/for-each [fnc]] macro 'foreach [word arr body] [word: word/value 
-            if not system/words/block? word [word: system/words/reduce [word]] system/words/make system/words/expression! compose/only [
-                _foreach arr function (word) [] body
-            ]
-        ] 
-        macro 'foreach-blk [word block body] [word: word/value 
-            if not system/words/block? word [word: system/words/reduce [word]] system/words/make system/words/expression! compose/only [
-                _foreach-blk block function (word) [] body
-            ]
-        ] 
-        macro 'topaz-value [value] [value: system/words/mold value/value 
-            system/words/make system/words/expression! compose [
-                load make string! (value)
+
+    #(
+        test: [topaz-parse [1 2 3] [integer!]]
+        result: 1
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [integer! integer!]]
+        result: 2
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [integer! integer! integer!]]
+        result: 3
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [integer! integer! integer! integer!]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [word!]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [some integer!]]
+        result: 3
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [any integer!]]
+        result: 3
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [collect some [keep integer!]]]
+        result: [1 2 3]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [
+            topaz-parse [
+                prin: function [text] [] [
+                    apply sys/print [text] 
+                    text
+                ] 
+                print: function [text] [] [
+                    apply sys/print [text + "^/"] 
+                    text
+                ] 
+                _foreach: function [arr fnc] [] [
+                    apply arr/for-each [fnc]
+                ] 
+                macro 'foreach [word arr body] [
+                    word: word/value 
+                    if not system/words/block? word [word: system/words/reduce [word]] 
+                    system/words/make system/words/expression! compose/only [
+                        _foreach arr function (word) [] body
+                    ]
+                ] 
+                macro 'foreach-blk [word block body] [
+                    word: word/value 
+                    if not system/words/block? word [word: system/words/reduce [word]] 
+                    system/words/make system/words/expression! compose/only [
+                        _foreach-blk block function (word) [] body
+                    ]
+                ] 
+                macro 'topaz-value [value] [
+                    value: system/words/mold value/value 
+                    system/words/make system/words/expression! compose [
+                        load make string! (value)
+                    ]
+                ]
+            ] [
+                collect any [
+                    name: set-word! 'function 
+                    keep (name) keep ('funcall-macro) keep (make lit-word! name) 
+                    keep/only block! block! block! 
+                    | 
+                    'macro name: lit-word! block! block! keep (make set-word! name) keep ('none) 
+                    | 
+                    skip
+                ]
             ]
         ]
-    ] [collect any [
-        name: set-word! 'function 
-        keep (name) keep ('funcall-macro) keep (make lit-word! name) keep/only block! block! block! 
-        | 
-        'macro name: lit-word! block! block! keep (make set-word! name) keep ('none) | 
-        skip
-    ]]]
-    result: [
-        prin: funcall-macro 'prin [text] print: funcall-macro 'print [text] _foreach: funcall-macro '_foreach [arr fnc] foreach: none foreach-blk: none topaz-value: none
-    ]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse [a [b c d] e] [word! into [some word!] word!]]
-    result: e
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c d] [word! [integer!] | word! word!]]
-    result: b
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [literal] [literal literal]]
-    result: literal
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [literal] [quote literal]]
-    result: literal
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [quote] [literal quote]]
-    result: quote
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [quote] [quote quote]]
-    result: quote
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [literal literal]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [opt word! integer!]]
-    result: 1
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [opt word!]]
-    result: a
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [any []]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [
-        output: copy [] 
-        reduce [topaz-parse [1 2 3] [any (append output "Hello")] output]
-    ]
-    result: [["Hello"] ["Hello"]]
-    type: block!
-    status: Pass
-) #(
-    test: [output: copy [] 
-        reduce [topaz-parse [1 2 3] [any [(append output "Hello")]] output]
-    ]
-    result: [["Hello"] ["Hello"]]
-    type: block!
-    status: Pass
-) #(
-    test: [word: 'word 
-        topaz-parse [a b c] [word]
-    ]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [word b c] [word]]
-    result: word
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [a [b c] d] [word! into [word! word!]]]
-    result: c
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [a [b c] d] [word! into [word! word!] word!]]
-    result: d
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [a [b c] d] [word! into paren! [word! word!]]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [a [b c] d] [word! into paren! [word! word!] word!]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [a (b c) d] [word! into paren! [word! word!]]]
-    result: c
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [a (b c) d] [word! into paren! [word! word!] word!]]
-    result: d
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [1 1.2 10%] [some number!]]
-    result: 10%
-    type: percent!
-    status: Pass
-) #(
-    test: [word: [a block] topaz-parse [word] [block!]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [word] [get block!]]
-    result: word
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [word] [get integer!]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [2 integer!]]
-    result: 2
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [3 integer!]]
-    result: 3
-    type: integer!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [4 integer!]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [integer! if (false) integer!]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [integer! if (true) integer!]]
-    result: 2
-    type: integer!
-    status: Pass
-) #(
-    test: [foo: rule [a b] [a ("A matched") | b ("B matched") | ("Neither matched")] 
-        topaz-parse [1 2 3] [foo word! integer!]
-    ]
-    result: "B matched"
-    type: string!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [foo word! integer!]]
-    result: "A matched"
-    type: string!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [foo block! paren!]]
-    result: "Neither matched"
-    type: string!
-    status: Pass
-) #(
-    test: [foo: rule [n [integer!]] [n integer!] topaz-parse [1 2 3] [foo "String"]]
-    result: {*** Script Error: foo does not allow string! for its n argument^/*** Where: do^/*** Stack: run-test-file topaz-parse cause-error }
-    type: error!
-    status: Pass
-) #(
-    test: [topaz-parse [1 2 3] [foo 3]]
-    result: 3
-    type: integer!
-    status: Pass
-) #(
-    test: [
-        foo: rule [] [n: integer! (n * 3)] 
-        topaz-parse [4] [foo]
-    ]
-    result: 12
-    type: integer!
-    status: Pass
-) #(
-    test: [n]
-    result: {*** Script Error: n has no value^/*** Where: try^/*** Stack: run-test-file }
-    type: error!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [word! word! end]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [foo: [word!] topaz-parse [a b c] [foo word!]]
-    result: b
-    type: word!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [foo word! end]]
-    result: #[none]
-    type: none!
-    status: Pass
-) #(
-    test: [topaz-parse [/a b /c] [collect any [keep to-word refinement! | skip]]]
-    result: [a c]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [word! here]]
-    result: [b c]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [word! pos: here word! word!]]
-    result: c
-    type: word!
-    status: Pass
-) #(
-    test: [pos]
-    result: [b c]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c] [word! copy 2 word!]]
-    result: [b c]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse "abc" ["a"]]
-    result: #"a"
-    type: char!
-    status: Pass
-) #(
-    test: [topaz-parse "abc" ["ab"]]
-    result: #"a"
-    type: char!
-    status: Pass
-) #(
-    test: [topaz-parse "abc" [copy "ab"]]
-    result: "ab"
-    type: string!
-    status: Pass
-) #(
-    test: [
-        text-chars: complement charset "<" 
-        tag-name-chars: complement charset "/ >" 
-        html: [object ["<html>" name: ('html) any [keep tag | keep text] "</html>"]] tag: [object ["<" name: copy some tag-name-chars ">" any [keep tag | keep text] "</" some tag-name-chars ">"]] 
-        text: [copy some text-chars] topaz-parse {<html><head><title>My page</title></head><body><p>Paragraph</p></body></html>} html
-    ]
-    result: #(
-        name: html
-        children: [#(
-            name: "head"
+        result: [
+            prin: funcall-macro 'prin [text] 
+            print: funcall-macro 'print [text] 
+            _foreach: funcall-macro '_foreach [arr fnc] foreach: none foreach-blk: none topaz-value: none
+        ]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a [b c d] e] [word! into [some word!] word!]]
+        result: e
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c d] [word! [integer!] | word! word!]]
+        result: b
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [literal] [literal literal]]
+        result: literal
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [literal] [quote literal]]
+        result: literal
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [quote] [literal quote]]
+        result: quote
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [quote] [quote quote]]
+        result: quote
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [literal literal]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [opt word! integer!]]
+        result: 1
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [opt word!]]
+        result: a
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [any []]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [
+            output: copy [] 
+            reduce [topaz-parse [1 2 3] [any (append output "Hello")] output]
+        ]
+        result: [["Hello"] ["Hello"]]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [
+            output: copy [] 
+            reduce [topaz-parse [1 2 3] [any [(append output "Hello")]] output]
+        ]
+        result: [["Hello"] ["Hello"]]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [
+            word: 'word 
+            topaz-parse [a b c] [word]
+        ]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [word b c] [word]]
+        result: word
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a [b c] d] [word! into [word! word!]]]
+        result: c
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a [b c] d] [word! into [word! word!] word!]]
+        result: d
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a [b c] d] [word! into paren! [word! word!]]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a [b c] d] [word! into paren! [word! word!] word!]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a (b c) d] [word! into paren! [word! word!]]]
+        result: c
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a (b c) d] [word! into paren! [word! word!] word!]]
+        result: d
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 1.2 10%] [some number!]]
+        result: 10%
+        type: percent!
+        status: Pass
+    ) 
+    #(
+        test: [
+            word: [a block] 
+            topaz-parse [word] [block!]
+        ]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [word] [get block!]]
+        result: word
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [word] [get integer!]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [2 integer!]]
+        result: 2
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [3 integer!]]
+        result: 3
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [4 integer!]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [integer! if (false) integer!]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [integer! if (true) integer!]]
+        result: 2
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [
+            foo: rule [a b] [a ("A matched") | b ("B matched") | ("Neither matched")] 
+            topaz-parse [1 2 3] [foo word! integer!]
+        ]
+        result: "B matched"
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [foo word! integer!]]
+        result: "A matched"
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [foo block! paren!]]
+        result: "Neither matched"
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [
+            foo: rule [n [integer!]] [n integer!] 
+            topaz-parse [1 2 3] [foo "String"]
+        ]
+        result: {*** Script Error: foo does not allow string! for its n argument^/*** Where: do^/*** Stack: run-test-file topaz-parse _parse _apply cause-error }
+        type: error!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [1 2 3] [foo 3]]
+        result: 3
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [
+            foo: rule [] [n: integer! (n * 3)] 
+            topaz-parse [4] [foo]
+        ]
+        result: 12
+        type: integer!
+        status: Pass
+    ) 
+    #(
+        test: [n]
+        result: {*** Script Error: n has no value^/*** Where: try^/*** Stack: run-test-file }
+        type: error!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [word! word! end]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [
+            foo: [word!] 
+            topaz-parse [a b c] [foo word!]
+        ]
+        result: b
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [foo word! end]]
+        result: #[none]
+        type: none!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [/a b /c] [collect any [keep to-word refinement! | skip]]]
+        result: [a c]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [word! here]]
+        result: [b c]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [word! pos: here word! word!]]
+        result: c
+        type: word!
+        status: Pass
+    ) 
+    #(
+        test: [pos]
+        result: [b c]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c] [word! copy 2 word!]]
+        result: [b c]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse "abc" ["a"]]
+        result: #"a"
+        type: char!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse "abc" ["ab"]]
+        result: #"a"
+        type: char!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse "abc" [copy "ab"]]
+        result: "ab"
+        type: string!
+        status: Pass
+    ) 
+    #(
+        test: [
+            text-chars: complement charset "<" 
+            tag-name-chars: complement charset "/ >" 
+            html: [object ["<html>" name: ('html) any [keep tag | keep text] "</html>"]] 
+            tag: [object ["<" name: copy some tag-name-chars ">" any [keep tag | keep text] "</" some tag-name-chars ">"]] 
+            text: [copy some text-chars] 
+            topaz-parse {<html><head><title>My page</title></head><body><p>Paragraph</p></body></html>} html
+        ]
+        result: #(
+            name: html
             children: [#(
-                name: "title"
-                children: ["My page"]
+                name: "head"
+                children: [#(
+                    name: "title"
+                    children: ["My page"]
+                )]
+            ) #(
+                name: "body"
+                children: [#(
+                    name: "p"
+                    children: ["Paragraph"]
+                )]
             )]
-        ) #(
-            name: "body"
-            children: [#(
-                name: "p"
-                children: ["Paragraph"]
-            )]
-        )]
+        )
+        type: map!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c d] [to 'c here]]
+        result: [c d]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c d] [thru 'c here]]
+        result: [d]
+        type: block!
+        status: Pass
+    ) 
+    #(
+        test: [topaz-parse [a b c d] [also 'a 'b]]
+        result: a
+        type: word!
+        status: Pass
     )
-    type: map!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c d] [to 'c here]]
-    result: [c d]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c d] [thru 'c here]]
-    result: [d]
-    type: block!
-    status: Pass
-) #(
-    test: [topaz-parse [a b c d] [also 'a 'b]]
-    result: a
-    type: word!
-    status: Pass
-)
