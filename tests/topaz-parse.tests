@@ -145,3 +145,11 @@ Red [
 [topaz-parse [a b c d] [to 'c here]]
 [topaz-parse [a b c d] [thru 'c here]]
 [topaz-parse [a b c d] [also 'a 'b]]
+[topaz-parse "/refinement" [load-next]]
+[
+    topaz-parse {/title "Spear of Aiste" /path %spear/ /author "Gabriele Santilli"} [
+        to-map collect some [
+            keep to-word load-next keep load-next
+        ]
+    ]
+]

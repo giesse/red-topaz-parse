@@ -80,7 +80,7 @@ parse-parse: context [
             |
             ['skip | '*] name: ('skip)
             |
-            name: ['end | 'here]
+            name: ['end | 'here | 'load-next]
             |
             name: 'into type: opt get datatype|typeset keep top-level
             |

@@ -452,4 +452,27 @@
         result: a
         type: word!
         status: Pass
+    ) 
+    #(
+        test: [topaz-parse "/refinement" [load-next]]
+        result: /refinement
+        type: refinement!
+        status: Pass
+    ) 
+    #(
+        test: [
+            topaz-parse {/title "Spear of Aiste" /path %spear/ /author "Gabriele Santilli"} [
+                to-map collect some [
+                    keep to-word load-next keep load-next
+                ]
+            ]
+        ]
+        result: #(
+            title: "Spear of Aiste"
+            path: %spear/
+            author: "Gabriele Santilli"
+        )
+        type: map!
+        status: Pass
+        note: "Test changed"
     )

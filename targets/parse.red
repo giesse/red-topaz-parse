@@ -48,6 +48,7 @@ context [
         (set word child)    -> [[child] (paren [_set (to lit-word! word)])]
         (copy child)        -> ['copy '_result [child]]
         (here)              -> [_result:]
+        (load-next)         -> [_pos: 'if (paren [_load-next]) :_pos]
         (also keep ignore)  -> [keep (paren [_push :_result]) ignore (paren [_result: _pop])]
         (get type)          -> [[
             'set '_result type
@@ -158,8 +159,14 @@ context [
     ]
 
     runtime: [
-        collection: _result: none
+        collection: _result: _pos: none
         _stack: []
+
+        _load-next: does [
+            not error? try [
+                _result: load/next _pos '_pos
+            ]
+        ]
 
         _push: func [value] [append/only _stack :value]
         _pop: does [take/last _stack]
